@@ -23,7 +23,14 @@ int main() {
   std::string united = pattern + "#" + line;
   std::vector<int> prefixFunction = std::vector<int>();
   countPrefixFunction(united, prefixFunction);
-  for (auto el: prefixFunction) {
-    std::cout << el << " " << std::endl;
+  std::vector<int> answer = std::vector<int>();
+  for (int i = 0; i < line.length(); ++i) {
+    if (prefixFunction[pattern.length() + i + 1] == pattern.length()) {
+      answer.push_back(i - prefixFunction[pattern.length() + i + 1] + 1);
+    }
   }
+  for (auto element: answer) {
+    std::cout << element << " ";
+  }
+  std::cout << std::endl;
 }
