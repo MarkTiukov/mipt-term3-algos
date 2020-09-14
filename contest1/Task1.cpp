@@ -3,6 +3,7 @@
 #include <vector>
 
 void countPrefixFunction(std::string& string, std::vector<int>& answer) {
+  ///  Вычисляем префикс-функцию
   answer.push_back(0);
   for (int i = 1; i < string.length(); ++i) {
     int borderLength = answer[i - 1];
@@ -26,6 +27,7 @@ int main() {
   std::vector<int> answer = std::vector<int>();
   for (int i = 0; i < line.length(); ++i) {
     if (prefixFunction[pattern.length() + i + 1] == pattern.length()) {
+      // вычитается длина паттерна
       answer.push_back(i - prefixFunction[pattern.length() + i + 1] + 1);
     }
   }
