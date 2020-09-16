@@ -19,13 +19,6 @@ void PatternMatching::findPattern() {
   }
 }
 
-void PatternMatching::printPatternPositions() {
-  for (auto el: patternPositions) {
-    std::cout << el << " ";
-  }
-  std::cout << std::endl;
-}
-
 void PatternMatching::countPrefixFunction(std::string&& string, std::vector<int>& answer) {
   ///  Вычисляет префикс-функцию
   answer.emplace_back(0);
@@ -39,5 +32,8 @@ void PatternMatching::countPrefixFunction(std::string&& string, std::vector<int>
     }
     answer.emplace_back(borderLength);
   }
+}
+const std::vector<int>& PatternMatching::getPatternPositions() const {
+  return patternPositions;
 }
 

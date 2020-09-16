@@ -8,5 +8,8 @@ int main() {
   std::cin >> pattern >> line;
   PatternMatching matcher(line, pattern);
   matcher.findPattern();
-  matcher.printPatternPositions();
+  for (auto el: matcher.getPatternPositions()) {
+    std::cout << el << " ";
+  }
+  std::cout << std::endl;
 }
