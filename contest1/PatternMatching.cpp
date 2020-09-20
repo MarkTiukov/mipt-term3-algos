@@ -33,7 +33,7 @@ void PatternMatching::countPrefixFunction(std::string&& string, std::vector<int>
     answer.emplace_back(borderLength);
   }
 }
+
 const std::vector<int>& PatternMatching::getPatternPositions() const {
   return patternPositions;
 }
-
