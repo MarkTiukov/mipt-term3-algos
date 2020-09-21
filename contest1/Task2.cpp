@@ -2,9 +2,9 @@
 #include <string>
 #include <vector>
 
-long long countPalindromeNumber(std::string& data);
-void countOddPalindromes(std::string& data, std::vector<long long>& result);
-void countEvenPalindromes(std::string& data, std::vector<long long>& result);
+long long countPalindromeNumber(const std::string& data);
+void countOddPalindromes(const std::string& data, std::vector<long long>& result);
+void countEvenPalindromes(const std::string& data, std::vector<long long>& result);
 
 int main() {
   std::string line;
@@ -12,15 +12,15 @@ int main() {
   std::cout << countPalindromeNumber(line) << std::endl;
 }
 
-long long countPalindromeNumber(std::string& data) {
-  /**
-   * находит количество палиндромов длины хотя бы 2 в строке @data
-   */
+/**
+* Находит количество палиндромов длины хотя бы 2 в строке @data
+*/
+long long countPalindromeNumber(const std::string& data) {
   std::vector<long long> oddLengths(data.length());
   std::vector<long long> evenLengths(data.length());
   countOddPalindromes(data, oddLengths);
   countEvenPalindromes(data, evenLengths);
-  long long result = -1 * data.length(); // не учитываются палиндромы длины 1
+  long long result = -data.length(); // не учитываются палиндромы длины 1
   for (auto el: evenLengths) {
     result += el;
   }
@@ -30,11 +30,11 @@ long long countPalindromeNumber(std::string& data) {
   return result;
 }
 
-void countOddPalindromes(std::string& data, std::vector<long long>& result) {
-  /**
-   * для @result[i] считает количество полиндромов нечетной длины
-   * с центром в @data[i], в том числе односимвольные палиндромы
-   */
+/**
+* Для @result[i] считает количество полиндромов нечетной длины
+* с центром в @data[i], в том числе односимвольные палиндромы
+*/
+void countOddPalindromes(const std::string& data, std::vector<long long>& result) {
   long long leftEnd = 0;
   long long rightEnd = -1;
   for (int i = 0; i < data.length(); ++i) {
@@ -53,11 +53,11 @@ void countOddPalindromes(std::string& data, std::vector<long long>& result) {
   }
 }
 
-void countEvenPalindromes(std::string& data, std::vector<long long>& result) {
-  /**
-   * для result[i] считает количество палиндромов
-   * четной длины с центром между @data[i-1] и @data[i]
-   */
+/**
+ * Для result[i] считает количество палиндромов
+ * четной длины с центром между @data[i-1] и @data[i]
+ */
+void countEvenPalindromes(const std::string& data, std::vector<long long>& result) {
   long long leftEnd = 0;
   long long rightEnd = -1;
   for (int i = 0; i < data.length(); ++i) {
