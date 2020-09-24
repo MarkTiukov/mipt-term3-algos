@@ -3,6 +3,7 @@
 #include <vector>
 
 long long countPalindromeNumber(const std::string& data);
+std::vector<long long> countPalindromeNumber(const std::string& data, bool countEvenNumber);
 std::vector<long long> countOddPalindromes(const std::string& data);
 std::vector<long long> countEvenPalindromes(const std::string& data);
 
@@ -17,59 +18,35 @@ int main() {
 */
 long long countPalindromeNumber(const std::string& data) {
   long long result = -data.length(); // не учитываются палиндромы длины 1
-  for (auto el: countEvenPalindromes(data)) {
+  for (auto el: countPalindromeNumber(data, true)) {
     result += el;
   }
-  for (auto el: countOddPalindromes(data)) {
+  for (auto el: countPalindromeNumber(data, false)) {
     result += el;
   }
   return result;
 }
 
 /**
-* Для @result[i] считает количество полиндромов нечетной длины
-* с центром в @data[i], в том числе односимвольные палиндромы
+* Для @result[i] считает количество полиндромов нечетной длины,
+* если @countEvenNumber == true, и четных иначе
+* с центром в @data[i]
 */
-std::vector<long long> countOddPalindromes(const std::string& data) {
+std::vector<long long> countPalindromeNumber(const std::string& data, bool countEvenNumber) {
   std::vector<long long> result(data.length());
   long long leftEnd = 0;
   long long rightEnd = -1;
   for (int i = 0; i < data.length(); ++i) {
     long long counter = 0;
     if (i <= rightEnd) {
-      counter = std::min(rightEnd - i + 1, result[rightEnd + leftEnd - i]);
+      counter = std::min(rightEnd - i + 1, result[rightEnd + leftEnd - i + countEvenNumber]);
     }
-    while (i + counter < data.length() && i - counter >= 0 && data[i + counter] == data[i - counter]) {
+    while (i + counter < data.length() && i - counter >= 0 && data[i + counter] == data[i - counter - countEvenNumber]) {
       ++counter;
     }
     result[i] = counter;
     if (i + counter - 1 > rightEnd) {
-      leftEnd = i - counter + 1;
-      rightEnd = i + counter - 1;
-    }
-  }
-  return result;
-}
-
-/**
- * Для result[i] считает количество палиндромов
- * четной длины с центром между @data[i-1] и @data[i]
- */
-std::vector<long long> countEvenPalindromes(const std::string& data) {
-  std::vector<long long> result(data.length());
-  long long leftEnd = 0;
-  long long rightEnd = -1;
-  for (int i = 0; i < data.length(); ++i) {
-    long long counter = 0;
-    if (i <= rightEnd) {
-      counter = std::min(rightEnd - i + 1, result[rightEnd + leftEnd - i + 1]);
-    }
-    while (i + counter < data.length() && i - counter > 0 && data[i + counter] == data[i - counter - 1]) {
-      ++counter;
-    }
-    result[i] = counter;
-    if (i + counter - 1 > rightEnd) {
-      leftEnd = i - counter;
+      leftEnd = i - counter + 1 - countEvenNumber;
       rightEnd = i + counter - 1;
     }
   }
