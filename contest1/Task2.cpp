@@ -4,8 +4,6 @@
 
 long long countPalindromeNumber(const std::string& data);
 std::vector<long long> countPalindromeNumber(const std::string& data, bool countEvenNumber);
-std::vector<long long> countOddPalindromes(const std::string& data);
-std::vector<long long> countEvenPalindromes(const std::string& data);
 
 int main() {
   std::string line;
@@ -33,15 +31,16 @@ long long countPalindromeNumber(const std::string& data) {
 * с центром в @data[i]
 */
 std::vector<long long> countPalindromeNumber(const std::string& data, bool countEvenNumber) {
-  std::vector<long long> result(data.length());
+  int length = data.length();
+  std::vector<long long> result(length);
   long long leftEnd = 0;
   long long rightEnd = -1;
-  for (int i = 0; i < data.length(); ++i) {
+  for (int i = 0; i < length; ++i) {
     long long counter = 0;
     if (i <= rightEnd) {
       counter = std::min(rightEnd - i + 1, result[rightEnd + leftEnd - i + countEvenNumber]);
     }
-    while (i + counter < data.length() && i - counter >= 0 && data[i + counter] == data[i - counter - countEvenNumber]) {
+    while (i + counter < length && i - counter >= 0 && data[i + counter] == data[i - counter - countEvenNumber]) {
       ++counter;
     }
     result[i] = counter;
