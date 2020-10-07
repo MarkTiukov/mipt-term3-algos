@@ -41,8 +41,8 @@ class AhoCorasickMachine {
 };
 
 int main() {
-  AhoCorasickMachine machine("ab??aba");
-  machine.workForText("ababacaba");
+  AhoCorasickMachine machine("ab??cd");
+  machine.workForText("abefcd");
 }
 
 AhoCorasickMachine::AhoCorasickMachine(const std::string& mask) : mask(mask), trieRoot(std::make_shared<Node>()) { buildTrie(); }
