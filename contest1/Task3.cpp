@@ -2,56 +2,160 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <unordered_map>
+
+static const int ALPHABET_SIZE = 26;
+
+struct Node {
+  std::unordered_map<char, std::shared_ptr<Node>> sons = std::unordered_map<char, std::shared_ptr<Node>>(ALPHABET_SIZE); /// сыновья / исходящие связи
+  std::unordered_map<char, std::shared_ptr<Node>> moves = std::unordered_map<char, std::shared_ptr<Node>>(ALPHABET_SIZE); /// переходы автомата
+  std::shared_ptr<Node> suffixLink = nullptr; /// суффиксная ссылка
+  std::shared_ptr<Node> up = nullptr; /// сжатая ссылка
+  std::shared_ptr<Node> parent = nullptr; /// ссылка на родителя
+  char parentChar; /// символ на переходе из родителя в текущую вершину
+  bool isPatternEnd = false; /// является ли концом некоторого шаблона
+  std::vector<int> patternIndexes; ///  шаблоны, с которыми связана данная вершина
+
+  Node() : parentChar(0) {}
+  Node(const std::shared_ptr<Node>& parent, char parentChar) : parent(parent), parentChar(parentChar) {}
+
+};
 
 class AhoCorasickMachine {
  private:
-  static const int ALPHABET_SIZE = 26;
-  struct Node;
   const std::string mask;
   std::shared_ptr<Node> trieRoot;
+  std::vector<int> startPositions;
 
+  std::shared_ptr<Node> getMove(std::shared_ptr<Node> node, char symbol);
+  std::shared_ptr<Node> makeLink(std::shared_ptr<Node> node);
+  std::shared_ptr<Node> makeUP(std::shared_ptr<Node> node);
   void buildTrie();
  public:
   AhoCorasickMachine(const std::string& mask);
+  void printTrie(std::shared_ptr<Node> node);
+  void printTrie();
+  void printStarts();
+  std::shared_ptr<Node> goBySymbol(std::vector<int>& counter, std::shared_ptr<Node> node);
+  void workForText(std::string&& text);
 };
 
-struct AhoCorasickMachine::Node {
-  std::vector<std::shared_ptr<Node>> sons = std::vector<std::shared_ptr<Node>>(ALPHABET_SIZE); /// сыновья/исходящие связи
-  std::vector<std::shared_ptr<Node>> fastMove = std::vector<std::shared_ptr<Node>>(ALPHABET_SIZE); /// переходы автомата
-  std::shared_ptr<Node> suffixLink; /// суффиксная ссылка
-  std::shared_ptr<Node> up; /// сжатая ссылка
-  std::shared_ptr<Node> parent; /// ссылка на родителя
-  char parentChar; /// символ на переходе из родителя в текущую вершину
-  bool isPatternEnd; /// является ли концом некоторого шаблона
-  std::vector<int> patternIndexes; ///  шаблоны, с которыми связана данная вершина
+int main() {
+  AhoCorasickMachine machine("ab??aba");
+  machine.workForText("ababacaba");
+}
 
-  Node(const std::shared_ptr<Node>& parent, char parent_char) : parent(parent), parentChar(parent_char) {}
-
-};
-
-AhoCorasickMachine::AhoCorasickMachine(const std::string& mask) : mask(mask) {}
+AhoCorasickMachine::AhoCorasickMachine(const std::string& mask) : mask(mask), trieRoot(std::make_shared<Node>()) { buildTrie(); }
 
 void AhoCorasickMachine::buildTrie() {
   std::shared_ptr<Node> currentNode = trieRoot;
+  int patternNumber = 0;
+  bool hasStared = true;
   for (int i = 0; i < mask.length(); ++i) {
     if (currentNode != trieRoot && mask[i] == '?') {
+      hasStared = true;
       currentNode->isPatternEnd = true;
+      currentNode->patternIndexes.push_back(patternNumber);
+      patternNumber++;
       currentNode = trieRoot;
     } else {
-      bool found = false;
-      for (auto son: currentNode->sons) {
-        if (!found && son->parentChar == mask[i]) {
-          currentNode = son;
-          found = true;
-        }
+      if (mask[i] == '?') {
+        continue;
       }
-      if (!found) {
-        currentNode->sons.emplace_back(std::make_shared<Node>(currentNode, mask[i]));
+      if (hasStared) {
+        hasStared = false;
+        startPositions.push_back(i);
+      }
+      std::shared_ptr<Node> newNode = std::make_shared<Node>(currentNode, mask[i]);
+      currentNode->sons.try_emplace(mask[i], newNode);
+      currentNode = currentNode->sons[mask[i]];
+    }
+  }
+  currentNode->isPatternEnd = true;
+  currentNode->patternIndexes.push_back(patternNumber);
+}
+
+std::shared_ptr<Node> AhoCorasickMachine::makeLink(std::shared_ptr<Node> node) {
+  if (node->suffixLink == nullptr) {
+    if (node == trieRoot || node->parent == trieRoot) {
+      node->suffixLink = trieRoot;
+    } else {
+      node->suffixLink = getMove(makeLink(node->parent), node->parentChar);
+    }
+  }
+  return node->suffixLink;
+}
+std::shared_ptr<Node> AhoCorasickMachine::getMove(std::shared_ptr<Node> node, char symbol) {
+  if (node->moves.find(symbol) == node->moves.end()) {
+    if (node->sons.find(symbol) != node->moves.end()) {
+      node->moves.emplace(symbol, node->sons[symbol]);
+    } else {
+      if (node == trieRoot) {
+        node->moves.emplace(symbol, trieRoot);
+      } else {
+        node->moves.emplace(symbol, getMove(makeLink(node), symbol));
       }
     }
   }
+  return node->moves[symbol];
+}
+std::shared_ptr<Node> AhoCorasickMachine::makeUP(std::shared_ptr<Node> node) {
+  if (node->up == nullptr) {
+    auto currentSuffixLink = makeLink(node);
+    if (currentSuffixLink->isPatternEnd) {
+      node->up = currentSuffixLink;
+    } else {
+      if (currentSuffixLink == trieRoot) {
+        node->up = trieRoot;
+      } else {
+        node->up = makeUP(currentSuffixLink);
+      }
+    }
+  }
+  return node->up;
+}
+void AhoCorasickMachine::printTrie() {
+  printTrie(trieRoot);
+}
+void AhoCorasickMachine::printTrie(std::shared_ptr<Node> node) {
+  std::cout << std::endl << "<started>" << std::endl;
+  for (auto son: node->sons) {
+    std::cout << "from " << son.first;
+    printTrie(son.second);
+  }
+  std::cout << "<left>" << std::endl;
 }
 
-int main() {
+void AhoCorasickMachine::printStarts() {
+  for (auto el: startPositions) {
+    std::cout << el << " ";
+  }
+  std::cout << std::endl;
+}
 
+void AhoCorasickMachine::workForText(std::string&& text) {
+  std::vector<int> counter(text.length());
+  std::shared_ptr<Node> currentNode = trieRoot;
+  for (int i = 0; i < text.length(); i++) {
+    currentNode = getMove(currentNode, text[i]);
+    std::shared_ptr<Node> temporaryNode = currentNode;
+    while (temporaryNode != trieRoot) {
+      if (temporaryNode->isPatternEnd) {
+        for (auto index: temporaryNode->patternIndexes) {
+          ++counter[i - startPositions[index] + 1];
+        }
+      }
+      temporaryNode = makeUP(temporaryNode);
+    }
+  }
+  for (int i = 0; i < counter.size(); ++i) {
+    //if (counter[i] == startPositions.size())
+    std::cout << counter[i] << " ";
+  }
+  std::cout << std::endl;
+
+  for (auto el: startPositions) {
+    std::cout << el << " ";
+  }
+  std::cout << std::endl;
 }
