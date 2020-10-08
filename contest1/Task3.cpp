@@ -26,6 +26,7 @@ class AhoCorasickMachine {
   const std::string mask;
   std::shared_ptr<Node> trieRoot;
   std::vector<int> startPositions;
+  std::vector<int> lengths;
 
   std::shared_ptr<Node> getMove(std::shared_ptr<Node> node, char symbol);
   std::shared_ptr<Node> makeLink(std::shared_ptr<Node> node);
@@ -37,12 +38,15 @@ class AhoCorasickMachine {
   void printTrie();
   void printStarts();
   std::shared_ptr<Node> goBySymbol(std::vector<int>& counter, std::shared_ptr<Node> node);
-  void workForText(std::string&& text);
+  void workForText(std::string& text);
 };
 
 int main() {
-  AhoCorasickMachine machine("ab??cd");
-  machine.workForText("abefcd");
+  std::string mask;
+  std::string text;
+  std::cin >> mask >> text;
+  AhoCorasickMachine machine(mask);
+  machine.workForText(text);
 }
 
 AhoCorasickMachine::AhoCorasickMachine(const std::string& mask) : mask(mask), trieRoot(std::make_shared<Node>()) { buildTrie(); }
@@ -51,8 +55,13 @@ void AhoCorasickMachine::buildTrie() {
   std::shared_ptr<Node> currentNode = trieRoot;
   int patternNumber = 0;
   bool hasStared = true;
+  int currentLength = 0;
   for (int i = 0; i < mask.length(); ++i) {
     if (currentNode != trieRoot && mask[i] == '?') {
+      if (currentLength > 0) {
+        lengths.push_back(currentLength);
+        currentLength = 0;
+      }
       hasStared = true;
       currentNode->isPatternEnd = true;
       currentNode->patternIndexes.push_back(patternNumber);
@@ -60,16 +69,25 @@ void AhoCorasickMachine::buildTrie() {
       currentNode = trieRoot;
     } else {
       if (mask[i] == '?') {
+        if (currentLength > 0) {
+          lengths.push_back(currentLength);
+          currentLength = 0;
+        }
         continue;
       }
       if (hasStared) {
         hasStared = false;
         startPositions.push_back(i);
       }
+      ++currentLength;
       std::shared_ptr<Node> newNode = std::make_shared<Node>(currentNode, mask[i]);
       currentNode->sons.try_emplace(mask[i], newNode);
       currentNode = currentNode->sons[mask[i]];
     }
+  }
+  if (currentLength > 0) {
+    lengths.push_back(currentLength);
+    currentLength = 0;
   }
   currentNode->isPatternEnd = true;
   currentNode->patternIndexes.push_back(patternNumber);
@@ -133,29 +151,38 @@ void AhoCorasickMachine::printStarts() {
   std::cout << std::endl;
 }
 
-void AhoCorasickMachine::workForText(std::string&& text) {
+void AhoCorasickMachine::workForText(std::string& text) {
   std::vector<int> counter(text.length());
   std::shared_ptr<Node> currentNode = trieRoot;
+  int begin = 0;
   for (int i = 0; i < text.length(); i++) {
     currentNode = getMove(currentNode, text[i]);
     std::shared_ptr<Node> temporaryNode = currentNode;
     while (temporaryNode != trieRoot) {
       if (temporaryNode->isPatternEnd) {
         for (auto index: temporaryNode->patternIndexes) {
-          ++counter[i - startPositions[index] + 1];
+//          std::cout << i << " " << startPositions[index] << " " << index << std::endl;
+          ++counter[i - lengths[index] - startPositions[index] + 1];
         }
       }
       temporaryNode = makeUP(temporaryNode);
     }
+    begin = i + 1;
   }
   for (int i = 0; i < counter.size(); ++i) {
-    //if (counter[i] == startPositions.size())
-    std::cout << counter[i] << " ";
+    if (counter[i] == startPositions.size())
+      std::cout << i << " ";
+//    std::cout << counter[i] << " ";
   }
   std::cout << std::endl;
 
-  for (auto el: startPositions) {
-    std::cout << el << " ";
-  }
-  std::cout << std::endl;
+//  for (auto el: startPositions) {
+//    std::cout << el << " ";
+//  }
+//  std::cout << std::endl;
+//
+//  for (auto el: lengths) {
+//    std::cout << el << " ";
+//  }
+//  std::cout << std::endl;
 }
