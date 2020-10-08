@@ -8,15 +8,15 @@ static const int ALPHABET_SIZE = 26;
 struct Node {
   std::unordered_map<char, std::shared_ptr<Node>> sons = std::unordered_map<char, std::shared_ptr<Node>>(ALPHABET_SIZE); /// сыновья / исходящие связи
   std::unordered_map<char, std::shared_ptr<Node>> moves = std::unordered_map<char, std::shared_ptr<Node>>(ALPHABET_SIZE); /// переходы автомата
-  std::shared_ptr<Node> suffixLink = nullptr; /// суффиксная ссылка
-  std::shared_ptr<Node> up = nullptr; /// сжатая ссылка
-  std::shared_ptr<Node> parent = nullptr; /// ссылка на родителя
+  std::weak_ptr<Node> suffixLink = std::shared_ptr<Node>(nullptr); /// суффиксная ссылка
+  std::weak_ptr<Node> up = std::shared_ptr<Node>(nullptr); /// сжатая ссылка
+  std::weak_ptr<Node> parent = std::shared_ptr<Node>(nullptr); /// ссылка на родителя
   char parentChar; /// символ на переходе из родителя в текущую вершину
   bool isPatternEnd = false; /// является ли концом некоторого шаблона
   std::vector<int> patternIndexes; ///  шаблоны, с которыми связана данная вершина
 
   Node() : parentChar(0) {}
-  Node(const std::shared_ptr<Node>& parent, char parentChar) : parent(parent), parentChar(parentChar) {}
+  Node(const std::weak_ptr<Node>& parent, char parentChar) : parent(parent), parentChar(parentChar) {}
 
 };
 
@@ -27,16 +27,12 @@ class AhoCorasickMachine {
   std::shared_ptr<Node> trieRoot;
   std::vector<int> startPositions;
   std::vector<int> patternLength;
-  std::shared_ptr<Node> getMove(std::shared_ptr<Node> node, char symbol);
-  std::shared_ptr<Node> makeLink(std::shared_ptr<Node> node);
-  std::shared_ptr<Node> makeUP(std::shared_ptr<Node> node);
+  std::weak_ptr<Node> getMove(std::weak_ptr<Node> node, char symbol);
+  std::weak_ptr<Node> makeLink(std::weak_ptr<Node> node);
+  std::weak_ptr<Node> makeUP(std::weak_ptr<Node> node);
   void buildTrie();
  public:
   AhoCorasickMachine(const std::string& mask);
-  void printTrie(std::shared_ptr<Node> node);
-  void printTrie();
-  void printStarts();
-  std::shared_ptr<Node> goBySymbol(std::vector<int>& counter, std::shared_ptr<Node> node);
   void workForText(std::string& text);
 };
 
@@ -94,66 +90,57 @@ void AhoCorasickMachine::buildTrie() {
   currentNode->patternIndexes.push_back(patternNumber);
 }
 
-std::shared_ptr<Node> AhoCorasickMachine::makeLink(std::shared_ptr<Node> node) {
-  if (node->suffixLink == nullptr) {
-    if (node == trieRoot || node->parent == trieRoot) {
-      node->suffixLink = trieRoot;
+std::weak_ptr<Node> AhoCorasickMachine::makeLink(std::weak_ptr<Node> node) {
+  if (node.lock()->suffixLink.lock() == nullptr) {
+    if (node.lock() == trieRoot || node.lock()->parent.lock() == trieRoot) {
+      node.lock()->suffixLink = trieRoot;
     } else {
-      node->suffixLink = getMove(makeLink(node->parent), node->parentChar);
+      node.lock()->suffixLink = getMove(makeLink(node.lock()->parent), node.lock()->parentChar);
     }
   }
-  return node->suffixLink;
+  return node.lock()->suffixLink;
 }
 
-std::shared_ptr<Node> AhoCorasickMachine::getMove(std::shared_ptr<Node> node, char symbol) {
-  if (node->moves.find(symbol) == node->moves.end()) {
-    if (node->sons.find(symbol) != node->moves.end()) {
-      node->moves.emplace(symbol, node->sons[symbol]);
+std::weak_ptr<Node> AhoCorasickMachine::getMove(std::weak_ptr<Node> node, char symbol) {
+  if (node.lock()->moves.find(symbol) == node.lock()->moves.end()) {
+    if (node.lock()->sons.find(symbol) != node.lock()->moves.end()) {
+      node.lock()->moves.emplace(symbol, node.lock()->sons[symbol]);
     } else {
-      if (node == trieRoot) {
-        node->moves.emplace(symbol, trieRoot);
+      if (node.lock() == trieRoot) {
+        node.lock()->moves.emplace(symbol, trieRoot);
       } else {
-        node->moves.emplace(symbol, getMove(makeLink(node), symbol));
+        node.lock()->moves.emplace(symbol, getMove(makeLink(node), symbol));
       }
     }
   }
-  return node->moves[symbol];
+  return node.lock()->moves[symbol];
 }
 
-std::shared_ptr<Node> AhoCorasickMachine::makeUP(std::shared_ptr<Node> node) {
-  if (node->up == nullptr) {
+std::weak_ptr<Node> AhoCorasickMachine::makeUP(std::weak_ptr<Node> node) {
+  if (node.lock()->up.lock() == nullptr) {
     auto currentSuffixLink = makeLink(node);
-    if (currentSuffixLink->isPatternEnd) {
-      node->up = currentSuffixLink;
+    if (currentSuffixLink.lock()->isPatternEnd) {
+      node.lock()->up = currentSuffixLink;
     } else {
-      if (currentSuffixLink == trieRoot) {
-        node->up = trieRoot;
+      if (currentSuffixLink.lock() == trieRoot) {
+        node.lock()->up = trieRoot;
       } else {
-        node->up = makeUP(currentSuffixLink);
+        node.lock()->up = makeUP(currentSuffixLink);
       }
     }
   }
-  return node->up;
-}
-
-void AhoCorasickMachine::printTrie(std::shared_ptr<Node> node) {
-  std::cout << std::endl << "<started>" << std::endl;
-  for (auto son: node->sons) {
-    std::cout << "from " << son.first;
-    printTrie(son.second);
-  }
-  std::cout << "<left>" << std::endl;
+  return node.lock()->up;
 }
 
 void AhoCorasickMachine::workForText(std::string& text) {
   std::vector<int> counter(text.length());
-  std::shared_ptr<Node> currentNode = trieRoot;
+  std::weak_ptr<Node> currentNode = trieRoot;
   for (int i = 0; i < text.length(); i++) {
     currentNode = getMove(currentNode, text[i]);
-    std::shared_ptr<Node> temporaryNode = currentNode;
-    while (temporaryNode != trieRoot) {
-      if (temporaryNode->isPatternEnd)
-        for (auto index: temporaryNode->patternIndexes)
+    std::weak_ptr<Node> temporaryNode = currentNode;
+    while (temporaryNode.lock() != trieRoot) {
+      if (temporaryNode.lock()->isPatternEnd)
+        for (auto index: temporaryNode.lock()->patternIndexes)
           if (i - patternLength[index] - startPositions[index] >= -1 && i + dividingCharacterNumber < text.length())
             ++counter[i - patternLength[index] - startPositions[index] + 1];
 
