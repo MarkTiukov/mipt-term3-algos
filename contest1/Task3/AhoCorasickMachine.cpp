@@ -1,7 +1,7 @@
 #include "AhoCorasickMachine.h"
 #include <iostream>
 
-AhoCorasickMachine::AhoCorasickMachine(std::string& mask) : mask(mask), trieRoot(std::make_shared<Node>()) { buildTrie(); }
+AhoCorasickMachine::AhoCorasickMachine(const std::string& mask) : mask(mask), trieRoot(std::make_shared<Node>()) { buildTrie(); }
 
 void AhoCorasickMachine::buildTrie() {
   std::shared_ptr<Node> currentNode = trieRoot;
@@ -12,18 +12,18 @@ void AhoCorasickMachine::buildTrie() {
     if (currentNode != trieRoot && mask[i] == '?') {
       if (currentLength > 0) {
         ++dividingCharacterNumber;
-        patternLength.push_back(currentLength);
+        patternLength.emplace_back(currentLength);
         currentLength = 0;
       }
       hasStared = true;
       currentNode->isPatternEnd = true;
-      currentNode->patternIndexes.push_back(patternNumber);
+      currentNode->patternIndexes.emplace_back(patternNumber);
       patternNumber++;
       currentNode = trieRoot;
     } else {
       if (mask[i] == '?') {
         if (currentLength > 0) {
-          patternLength.push_back(currentLength);
+          patternLength.emplace_back(currentLength);
           currentLength = 0;
         }
         ++dividingCharacterNumber;
@@ -31,7 +31,7 @@ void AhoCorasickMachine::buildTrie() {
       }
       if (hasStared) {
         hasStared = false;
-        startPositions.push_back(i);
+        startPositions.emplace_back(i);
       }
       ++currentLength;
       dividingCharacterNumber = 0;
@@ -41,10 +41,10 @@ void AhoCorasickMachine::buildTrie() {
     }
   }
   if (currentLength > 0) {
-    patternLength.push_back(currentLength);
+    patternLength.emplace_back(currentLength);
   }
   currentNode->isPatternEnd = true;
-  currentNode->patternIndexes.push_back(patternNumber);
+  currentNode->patternIndexes.emplace_back(patternNumber);
 }
 
 std::weak_ptr<AhoCorasickMachine::Node> AhoCorasickMachine::makeLink(const std::weak_ptr<Node>& node) {
@@ -85,7 +85,7 @@ std::weak_ptr<AhoCorasickMachine::Node> AhoCorasickMachine::makeUP(const std::we
   return node.lock()->up;
 }
 
-void AhoCorasickMachine::workForText(std::string& text) {
+void AhoCorasickMachine::workForText(const std::string& text) {
   std::vector<int> counter(text.length());
   std::weak_ptr<Node> currentNode = trieRoot;
   for (int i = 0; i < text.length(); i++) {
@@ -103,7 +103,7 @@ void AhoCorasickMachine::workForText(std::string& text) {
   printAnswer(text, counter);
 }
 
-void AhoCorasickMachine::printAnswer(std::string& text, std::vector<int>& counter) {
+void AhoCorasickMachine::printAnswer(const std::string& text, std::vector<int>& counter) {
   for (int i = 0; i < counter.size(); ++i) {
     if (startPositions.empty()) {
       if (i + dividingCharacterNumber <= text.length())

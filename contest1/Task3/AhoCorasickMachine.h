@@ -32,8 +32,9 @@ class AhoCorasickMachine {
   std::weak_ptr<Node> makeLink(const std::weak_ptr<Node>& node);
   std::weak_ptr<Node> makeUP(const std::weak_ptr<Node>& node);
   void buildTrie();
+  void printAnswer(const std::string& text, std::vector<int>& counter);
+
  public:
-  explicit AhoCorasickMachine(std::string& mask);
-  void workForText(std::string& text);
-  void printAnswer(std::string& text, std::vector<int>& counter);
+  explicit AhoCorasickMachine(const std::string& mask);
+  void workForText(const std::string& text);
 };
