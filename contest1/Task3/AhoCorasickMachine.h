@@ -36,5 +36,5 @@ class AhoCorasickMachine {
 
  public:
   explicit AhoCorasickMachine(const std::string& mask);
-  void workForText(const std::string& text);
+  void printAllOccurrences(const std::string& text);
 };

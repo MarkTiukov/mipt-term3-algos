@@ -85,7 +85,7 @@ std::weak_ptr<AhoCorasickMachine::Node> AhoCorasickMachine::makeUP(const std::we
   return node.lock()->up;
 }
 
-void AhoCorasickMachine::workForText(const std::string& text) {
+void AhoCorasickMachine::printAllOccurrences(const std::string& text) {
   std::vector<int> counter(text.length());
   std::weak_ptr<Node> currentNode = trieRoot;
   for (int i = 0; i < text.length(); i++) {

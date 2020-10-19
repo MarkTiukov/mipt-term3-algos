@@ -10,5 +10,5 @@ int main() {
   std::string text;
   inputData(mask, text);
   AhoCorasickMachine machine(mask);
-  machine.workForText(text);
+  machine.printAllOccurrences(text);
 }
