@@ -26,17 +26,15 @@ public:
         this->buildSuffixArray();
         this->buildLCP();
     }
-
-    void printSuffixArray();
-    void printLCP();
+    
+    size_t countDifferentSubstrings();
 };
 
 std::string readData();
 
 int main() {
     SuffixMachine machine(readData());
-    machine.printSuffixArray();
-    machine.printLCP();
+    std::cout << machine.countDifferentSubstrings() << std::endl;
 }
 
 std::string readData() {
@@ -107,17 +105,9 @@ void SuffixMachine::sortByClasses(std::vector<long long> substrings, size_t expo
     for (size_t i = 1; i < equalityClassNumber; ++i) {
         counters[i] += counters[i - 1];
     }
-    for (int i = specialText.length() - 1; i >= 0; --i) {
-        suffixArray[--counters[equalityClasses[substrings[i]]]] = substrings[i];
+    for (size_t i = specialText.length(); i > 0; --i) {
+        suffixArray[--counters[equalityClasses[substrings[i - 1]]]] = substrings[i - 1];
     }
-}
-
-void SuffixMachine::printSuffixArray() {
-    std::cout << "suffix array:   ";
-    for (auto el : suffixArray) {
-        std::cout << el << " ";
-    }
-    std::cout << std::endl;
 }
 
 void SuffixMachine::buildLCP() {
@@ -145,10 +135,14 @@ void SuffixMachine::buildLCP() {
     lcp.pop_back();
 }
 
-void SuffixMachine::printLCP() {
-    std::cout << "LCP:   ";
-    for (auto el : lcp) {
-        std::cout << el << " ";
+size_t SuffixMachine::countDifferentSubstrings() {
+    size_t result = 0;
+    for (size_t i = 0; i < text.length(); ++i) {
+        result += text.size() - suffixArray[i];
     }
-    std::cout << std::endl;
+    for (size_t i = 0; i < text.length() - 1; ++i) {
+        result -= lcp[i];
+    }
+    return result;
 }
+    
