@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 
-class SuffixMachine {
+class SuffixArray {
 private:
     static const char LOW_SYMBOL = '$';
     static const size_t ALPHABET_SIZE = 256; // 'a'-'z', '$'
@@ -20,7 +20,7 @@ private:
     size_t log2(size_t n);
 
 public:
-    SuffixMachine(const std::string& text) : text(text), specialText(text + LOW_SYMBOL),
+    SuffixArray(const std::string& text) : text(text), specialText(text + LOW_SYMBOL),
                                              suffixArray(specialText.length()), lcp(text.length()),
                                              equalityClasses(specialText.length()) {
         this->buildSuffixArray();
@@ -30,37 +30,31 @@ public:
     size_t countDifferentSubstrings();
 };
 
-std::string readData();
-
 int main() {
-    SuffixMachine machine(readData());
-    std::cout << machine.countDifferentSubstrings() << std::endl;
-}
-
-std::string readData() {
     std::string data;
     std::cin >> data;
-    return data;
+    SuffixArray array(data);
+    std::cout << array.countDifferentSubstrings() << std::endl;
 }
 
-void SuffixMachine::buildSuffixArray() {
+void SuffixArray::buildSuffixArray() {
     const size_t specialTextLength = specialText.length();
     size_t equalityClassNumber = findEqualityClasses();
-    std::vector<long long> newSuffixMassiv(specialTextLength);
+    std::vector<long long> newSuffixArray(specialTextLength);
     for (int i = 0; (1 << i) < specialTextLength; ++i) {
         for (int j = 0; j < specialTextLength; ++j) {
-            newSuffixMassiv[j] = suffixArray[j] - (1 << i);
-            if (newSuffixMassiv[j] < 0) {
-                newSuffixMassiv[j] += specialTextLength;
+            newSuffixArray[j] = suffixArray[j] - (1 << i);
+            if (newSuffixArray[j] < 0) {
+                newSuffixArray[j] += specialTextLength;
             }
         }
-        sortByClasses(newSuffixMassiv, i, equalityClassNumber);
+        sortByClasses(newSuffixArray, i, equalityClassNumber);
         equalityClassNumber = findEqualityClasses(i);
     }
     suffixArray.erase(suffixArray.begin());
 }
 
-size_t SuffixMachine::findEqualityClasses() {
+size_t SuffixArray::findEqualityClasses() {
     std::vector<size_t> counters(ALPHABET_SIZE);
     for (auto letter : specialText) {
         ++counters[letter];
@@ -81,7 +75,7 @@ size_t SuffixMachine::findEqualityClasses() {
     return equalityClassNumber;
 }
 
-size_t SuffixMachine::findEqualityClasses(size_t phaseNumber) {
+size_t SuffixArray::findEqualityClasses(size_t phaseNumber) {
     size_t specialTextLength = specialText.length();
     std::vector<size_t> newEqualityClasses(specialTextLength);
     size_t currentClassNumber = 1;
@@ -97,7 +91,7 @@ size_t SuffixMachine::findEqualityClasses(size_t phaseNumber) {
     return currentClassNumber;
 }
 
-void SuffixMachine::sortByClasses(std::vector<long long> substrings, size_t exponent, size_t equalityClassNumber) {
+void SuffixArray::sortByClasses(std::vector<long long> substrings, size_t exponent, size_t equalityClassNumber) {
     std::vector<size_t> counters(equalityClassNumber);
     for (size_t i = 0; i < specialText.length(); ++i) {
         ++counters[equalityClasses[substrings[i]]];
@@ -110,7 +104,7 @@ void SuffixMachine::sortByClasses(std::vector<long long> substrings, size_t expo
     }
 }
 
-void SuffixMachine::buildLCP() {
+void SuffixArray::buildLCP() {
     std::vector<size_t> inverseSuffixArray(suffixArray.size());
     for (size_t i = 0; i < suffixArray.size(); ++i) {
         inverseSuffixArray[suffixArray[i]] = i;
@@ -135,7 +129,7 @@ void SuffixMachine::buildLCP() {
     lcp.pop_back();
 }
 
-size_t SuffixMachine::countDifferentSubstrings() {
+size_t SuffixArray::countDifferentSubstrings() {
     size_t result = 0;
     for (size_t i = 0; i < text.length(); ++i) {
         result += text.size() - suffixArray[i];
