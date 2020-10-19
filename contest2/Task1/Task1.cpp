@@ -10,19 +10,25 @@ private:
     std::string specialText;
     std::vector<long long> suffixArray;
     std::vector<size_t> equalityClasses;
-    
+    std::vector<int> lcp;
+
+    void buildLCP();
     void buildSuffixArray();
     void sortByClasses(std::vector<long long> newSuffixArray, size_t exponent, size_t equalityClassNumber);
     size_t findEqualityClasses();
     size_t findEqualityClasses(size_t phaseNumber);
-    
+    size_t log2(size_t n);
+
 public:
     SuffixMachine(const std::string& text) : text(text), specialText(text + LOW_SYMBOL),
-                                                         suffixArray(specialText.length()), equalityClasses(specialText.length()) {
+                                             suffixArray(specialText.length()), lcp(text.length()),
+                                             equalityClasses(specialText.length()) {
         this->buildSuffixArray();
+        this->buildLCP();
     }
-    
+
     void printSuffixArray();
+    void printLCP();
 };
 
 std::string readData();
@@ -30,6 +36,7 @@ std::string readData();
 int main() {
     SuffixMachine machine(readData());
     machine.printSuffixArray();
+    machine.printLCP();
 }
 
 std::string readData() {
@@ -106,13 +113,42 @@ void SuffixMachine::sortByClasses(std::vector<long long> substrings, size_t expo
 }
 
 void SuffixMachine::printSuffixArray() {
+    std::cout << "suffix array:   ";
     for (auto el : suffixArray) {
         std::cout << el << " ";
     }
     std::cout << std::endl;
 }
 
+void SuffixMachine::buildLCP() {
+    std::vector<size_t> inverseSuffixArray(suffixArray.size());
+    for (size_t i = 0; i < suffixArray.size(); ++i) {
+        inverseSuffixArray[suffixArray[i]] = i;
+    }
+    int currentLCP = 0;
+    for (size_t i = 0; i < suffixArray.size(); ++i) {
+        if (currentLCP > 0) {
+            --currentLCP;
+        }
+        if (inverseSuffixArray[i] == suffixArray.size() - 1) {
+            lcp[suffixArray.size() - 1] = -1;
+            currentLCP = 0;
+        } else {
+            size_t j = suffixArray.at(inverseSuffixArray[i] + 1);
+            while (std::max(i, j) + currentLCP < suffixArray.size() &&
+                   text[i + currentLCP] == text[j + currentLCP]) {
+                ++currentLCP;
+            }
+            lcp[inverseSuffixArray[i]] = currentLCP;
+        }
+    }
+    lcp.pop_back();
+}
 
-
-
-
+void SuffixMachine::printLCP() {
+    std::cout << "LCP:   ";
+    for (auto el : lcp) {
+        std::cout << el << " ";
+    }
+    std::cout << std::endl;
+}
