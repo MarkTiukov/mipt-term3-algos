@@ -1,8 +1,10 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <limits>
 
-const double fPRECISION = 1e-6;
+
+const double fPRECISION = std::numeric_limits<float>::epsilon();
 
 class Point {
 public:
@@ -44,7 +46,8 @@ int main() {
     std::cin >> b.x >> b.y >> b.z;
     std::cin >> c.x >> c.y >> c.z;
     std::cin >> d.x >> d.y >> d.z;
-    std::cout << std::setprecision(6) << findMinDistanceBetweenTwoSegments(Segment(a, b), Segment(c, d)) << std::endl;
+    double result = findMinDistanceBetweenTwoSegments(Segment(a, b), Segment(c, d));
+    std::cout << std::setprecision(9) << (std::abs(result) < fPRECISION ? 0 : result) << std::endl;
 }
 
 double findMinDistanceBetweenTwoSegments(const Segment &segment1, const Segment &segment2) {
@@ -53,7 +56,7 @@ double findMinDistanceBetweenTwoSegments(const Segment &segment1, const Segment 
     Point new_begin = segment1.begin + Point(1, 0, 0);
     Point new_end = segment2.begin + Point(1, 0, 0);
     Point left, right;
-    for (int count = 0; (begin != new_begin || end != new_end) && count < 100; ++count) {
+    for (int count = 0; (begin != new_begin || end != new_end) && count < 20000; ++count) {
         begin = new_begin;
         end   = new_end;
         left  = segment1.begin;
