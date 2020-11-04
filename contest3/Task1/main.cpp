@@ -53,10 +53,10 @@ int main() {
 double findMinDistanceBetweenTwoSegments(const Segment &segment1, const Segment &segment2) {
     Point begin = segment1.begin;
     Point end = segment2.begin;
-    Point new_begin = segment1.begin + Point(1, 0, 0);
-    Point new_end = segment2.begin + Point(1, 0, 0);
+    Point new_begin = segment1.begin;
+    Point new_end = segment2.begin;
     Point left, right;
-    for (int count = 0; (begin != new_begin || end != new_end) && count < 20000; ++count) {
+    for (int count = 0;count < 20000; ++count) {
         begin = new_begin;
         end   = new_end;
         left  = segment1.begin;
@@ -84,7 +84,6 @@ double findMinDistanceBetweenTwoSegments(const Segment &segment1, const Segment 
                 left = a;
             }
         }
-        
         new_end = left;
     }
     
