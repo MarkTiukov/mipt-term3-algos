@@ -8,7 +8,6 @@
 
 struct Point {
     long long x, y;
-    long long cot;
     
     Point() = default;
     Point(long long x, long long y) : x(x), y(y) {}
@@ -34,6 +33,7 @@ void printMinFence(const std::vector<Point> &points);
 int main() {
     std::vector<Point> points;
     readData(points);
+//    std::cout << "printing" << std::endl;
 //    for (auto el : points) {
 //        std::cout << el << std::endl;
 //    }
@@ -44,10 +44,19 @@ void readData(std::vector<Point> &points) {
     size_t n;
     std::cin >> n;
     points = std::vector<Point>(n);
+    size_t min_position = 0;
     for (size_t i = 0; i < n; ++i) {
         std::cin >> points[i].x >> points[i].y;
+        if (i == 0) {
+            min_position = 0;
+        }
+        else {
+            if (points[i] < points[min_position])
+                min_position = i;
+        }
     }
-    std::sort(points.begin(), points.end());
+//    std::cout << "read" << std::endl;
+    std::swap(points[0], points[min_position]);
     begin = points[0];
     std::sort(++points.begin(), points.end(), cmp);
 }
@@ -91,7 +100,7 @@ void printMinFence(const std::vector<Point> &points) {
         fence.pop_back();
         fenceLength += getLength(fence.back(), topPoint);
     }
-    std::cout << std::fixed << std::setprecision(10) << fenceLength << std::endl;
+    std::cout << std::setprecision(10) << fenceLength << std::endl;
 }
 
 extern std::ostream& operator<<(std::ostream& outputStream, const Point& point) {
@@ -106,15 +115,15 @@ bool checkLeftRotation(const Point& a, const Point& b,const Point& c) {
 }
 
 double getLength(const Point& a, const Point& b) {
-    return std::sqrt((double)(b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
+    return std::sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
 }
 
 bool cmp(const Point &a, const Point &b) {
     Point v1(a.x - begin.x, a.y - begin.y);
     Point v2(b.x - begin.x, b.y - begin.y);
-    long long product = v1.y * v2.x - v1.x * v2.y;
+    long long product = v1.x * v2.y - v1.y * v2.x;
     if (product == 0) {
-        return a.x < b.x;
+        return a.x * a.x + a.y * a.y < b.x * b.x + b.y * b.y;
     }
-    return product < 0;
+    return product > 0;
 }
