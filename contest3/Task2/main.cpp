@@ -6,14 +6,12 @@
 #include <iomanip>
 #include <climits>
 
-const double fPRECISION = 1e-9;
-
 struct Point {
-    double x, y;
-    double cot;
+    long long x, y;
+    long long cot;
     
     Point() = default;
-    Point(double x, double y) : x(x), y(y) {}
+    Point(long long x, long long y) : x(x), y(y) {}
     
 };
 
@@ -46,7 +44,7 @@ void readData(std::vector<Point> &points) {
     size_t n;
     std::cin >> n;
     points = std::vector<Point>(n);
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         std::cin >> points[i].x >> points[i].y;
     }
     std::sort(points.begin(), points.end());
@@ -55,7 +53,7 @@ void readData(std::vector<Point> &points) {
 }
 
 bool operator==(const Point& one, const Point &other) {
-    return std::abs(one.x - other.x) < fPRECISION && std::abs(one.y - other.y) < fPRECISION;
+    return one.x == other.x && one.y == other.y;
 }
 
 bool operator>(const Point& one, const Point &other) {
@@ -68,7 +66,7 @@ bool operator!=(const Point& one, const Point &other) {
 
 bool operator<(const Point& one, const Point& another) {
     bool result = one.y < another.y;
-    if (std::abs(one.y - another.y) < fPRECISION)
+    if (one.y == another.y)
         result = one.x < another.x;
     return result;
 }
@@ -93,7 +91,7 @@ void printMinFence(const std::vector<Point> &points) {
         fence.pop_back();
         fenceLength += getLength(fence.back(), topPoint);
     }
-    std::cout << std::setprecision(10) << fenceLength << std::endl;
+    std::cout << std::fixed << std::setprecision(10) << fenceLength << std::endl;
 }
 
 extern std::ostream& operator<<(std::ostream& outputStream, const Point& point) {
@@ -104,18 +102,18 @@ extern std::ostream& operator<<(std::ostream& outputStream, const Point& point) 
 bool checkLeftRotation(const Point& a, const Point& b,const Point& c) {
     Point vector1(b.x - a.x, b.y - a.y);
     Point vector2(c.x - b.x, c.y - b.y);
-    return vector1.x * vector2.y - vector1.y * vector2.x >= 0 - fPRECISION;
+    return vector1.x * vector2.y - vector1.y * vector2.x >= 0;
 }
 
 double getLength(const Point& a, const Point& b) {
-    return std::sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
+    return std::sqrt((double)(b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
 }
 
 bool cmp(const Point &a, const Point &b) {
     Point v1(a.x - begin.x, a.y - begin.y);
     Point v2(b.x - begin.x, b.y - begin.y);
-    double product = v1.y * v2.x - v1.x * v2.y;
-    if (std::abs(product) < fPRECISION) {
+    long long product = v1.y * v2.x - v1.x * v2.y;
+    if (product == 0) {
         return a.x < b.x;
     }
     return product < 0;
