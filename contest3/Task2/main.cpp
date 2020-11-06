@@ -24,10 +24,12 @@ bool operator!=(const Point& one, const Point& another);
 Point begin;
 
 bool cmp(const Point &a, const Point &b);
+long long crossProduct(const Point& v1, const Point& v2);
 
 void readData(std::vector<Point> &points);
 double getLength(const Point& a, const Point& b);
 bool checkLeftRotation(const Point& a, const Point& b,const Point& c);
+bool checkAreOnLine(const Point& a, const Point& b, const Point&c);
 void printMinFence(const std::vector<Point> &points);
 
 int main() {
@@ -85,22 +87,31 @@ void printMinFence(const std::vector<Point> &points) {
     size_t secondElementPosition = 1;
     while (secondElementPosition < points.size() && points[secondElementPosition] == points[0])
         ++secondElementPosition;
-    fence.push_back(points[secondElementPosition++]);
-    for (size_t i = secondElementPosition; i < points.size(); ++i) {
-        if (fence.back() == points[i])
-            continue;
-        while (!checkLeftRotation(fence[fence.size() - 2], fence.back(), points[i])) {
-            fence.pop_back();
+    if (secondElementPosition == points.size()) {
+        std::cout << "0" << std::endl;;
+    } else {
+        fence.push_back(points[secondElementPosition++]);
+        for (size_t i = secondElementPosition; i < points.size(); ++i) {
+            if (fence.back() == points[i])
+                continue;
+            while (!checkLeftRotation(fence[fence.size() - 2], fence.back(), points[i])) {
+                fence.pop_back();
+            }
+            fence.push_back(points[i]);
         }
-        fence.push_back(points[i]);
+        double fenceLength = getLength(fence.back(), fence.front());
+        if (checkAreOnLine(points[0], fence.back(), fence[fence.size() - 2])) {
+            std::cout << getLength(fence.front(), fence.back()) << std::endl;
+        } else {
+            while (fence.size() > 1) {
+                Point topPoint = fence.back();
+                fence.pop_back();
+                fenceLength += getLength(fence.back(), topPoint);
+            }
+            std::cout << std::setprecision(10) << fenceLength << std::endl;
+        }
     }
-    double fenceLength = getLength(fence.back(), fence.front());
-    while (fence.size() > 1) {
-        Point topPoint = fence.back();
-        fence.pop_back();
-        fenceLength += getLength(fence.back(), topPoint);
-    }
-    std::cout << std::setprecision(10) << fenceLength << std::endl;
+    
 }
 
 extern std::ostream& operator<<(std::ostream& outputStream, const Point& point) {
@@ -109,9 +120,14 @@ extern std::ostream& operator<<(std::ostream& outputStream, const Point& point) 
 }
 
 bool checkLeftRotation(const Point& a, const Point& b,const Point& c) {
-    Point vector1(b.x - a.x, b.y - a.y);
-    Point vector2(c.x - b.x, c.y - b.y);
-    return vector1.x * vector2.y - vector1.y * vector2.x >= 0;
+//    Point vector1(b.x - a.x, b.y - a.y);
+//    Point vector2(c.x - b.x, c.y - b.y);
+//    return vector1.x * vector2.y - vector1.y * vector2.x >= 0;
+    return crossProduct(Point(b.x - a.x, b.y - a.y), Point(c.x - b.x, c.y - b.y)) >= 0;
+}
+
+bool checkAreOnLine(const Point& a, const Point& b, const Point& c) {
+    return crossProduct(Point(b.x - a.x, b.y - a.y), Point(c.x - b.x, c.y - b.y)) == 0;
 }
 
 double getLength(const Point& a, const Point& b) {
@@ -119,11 +135,16 @@ double getLength(const Point& a, const Point& b) {
 }
 
 bool cmp(const Point &a, const Point &b) {
-    Point v1(a.x - begin.x, a.y - begin.y);
-    Point v2(b.x - begin.x, b.y - begin.y);
-    long long product = v1.x * v2.y - v1.y * v2.x;
+//    Point v1(a.x - begin.x, a.y - begin.y);
+//    Point v2(b.x - begin.x, b.y - begin.y);
+//    long long product = v1.x * v2.y - v1.y * v2.x;
+    long long product = crossProduct(Point(a.x - begin.x, a.y - begin.y), Point(b.x - begin.x, b.y - begin.y));
     if (product == 0) {
         return a.x * a.x + a.y * a.y < b.x * b.x + b.y * b.y;
     }
     return product > 0;
+}
+
+long long crossProduct(const Point& v1, const Point& v2) {
+    return v1.x * v2.y - v1.y * v2.x;
 }
