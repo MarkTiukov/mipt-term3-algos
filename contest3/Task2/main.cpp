@@ -28,6 +28,7 @@ long long crossProduct(const Point& v1, const Point& v2);
 
 void readData(std::vector<Point> &points);
 double getLength(const Point& a, const Point& b);
+bool checkOnePointAfterTwoOthers(const Point& a, const Point& b,const Point& c);
 bool checkLeftRotation(const Point& a, const Point& b,const Point& c);
 bool checkAreOnLine(const Point& a, const Point& b, const Point&c);
 void printMinFence(const std::vector<Point> &points);
@@ -119,11 +120,20 @@ extern std::ostream& operator<<(std::ostream& outputStream, const Point& point) 
     return outputStream;
 }
 
+bool checkOnePointAfterTwoOthers(const Point& a, const Point& b,const Point& c) {
+    bool result = false;
+    if (((a.x <= c.x && b.x <= c.x) || (a.x >= c.x && b.x >= c.x)) && ((a.y <= c.y && b.y <= c.y) || (a.y >= c.y && b.y >= c.y))) {
+        result = true;
+    }
+    return result;
+}
+
 bool checkLeftRotation(const Point& a, const Point& b,const Point& c) {
-//    Point vector1(b.x - a.x, b.y - a.y);
-//    Point vector2(c.x - b.x, c.y - b.y);
-//    return vector1.x * vector2.y - vector1.y * vector2.x >= 0;
-    return crossProduct(Point(b.x - a.x, b.y - a.y), Point(c.x - b.x, c.y - b.y)) >= 0;
+    auto product = crossProduct(Point(b.x - a.x, b.y - a.y), Point(c.x - b.x, c.y - b.y));
+    if (product == 0) {
+        return checkOnePointAfterTwoOthers(a, b, c);
+    }
+    return product > 0;
 }
 
 bool checkAreOnLine(const Point& a, const Point& b, const Point& c) {
