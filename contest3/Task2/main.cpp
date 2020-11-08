@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <deque>
 #include <iomanip>
-#include <climits>
 
 struct Point {
     long long x, y;
@@ -28,9 +27,7 @@ long long crossProduct(const Point& v1, const Point& v2);
 
 void readData(std::vector<Point> &points);
 double getLength(const Point& a, const Point& b);
-bool checkOnePointAfterTwoOthers(const Point& a, const Point& b,const Point& c);
 bool checkLeftRotation(const Point& a, const Point& b,const Point& c);
-bool checkAreOnLine(const Point& a, const Point& b, const Point&c);
 void printMinFence(const std::vector<Point> &points);
 
 int main() {
@@ -111,20 +108,9 @@ extern std::ostream& operator<<(std::ostream& outputStream, const Point& point) 
     return outputStream;
 }
 
-bool checkOnePointAfterTwoOthers(const Point& a, const Point& b,const Point& c) {
-    bool result = false;
-    if (getLength(c, a) >= getLength(a, b) && getLength(c, b) <= getLength(c, a))
-        result = true;
-    return result;
-}
-
 bool checkLeftRotation(const Point& a, const Point& b,const Point& c) {
     auto product = crossProduct(Point(b.x - a.x, b.y - a.y), Point(c.x - b.x, c.y - b.y));
     return product >= 0;
-}
-
-bool checkAreOnLine(const Point& a, const Point& b, const Point& c) {
-    return crossProduct(Point(b.x - a.x, b.y - a.y), Point(c.x - b.x, c.y - b.y)) == 0;
 }
 
 double getLength(const Point& a, const Point& b) {
