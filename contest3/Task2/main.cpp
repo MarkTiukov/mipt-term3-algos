@@ -98,23 +98,23 @@ void printMinFence(const std::vector<Point> &points) {
             while (!checkLeftRotation(fence[fence.size() - 2], fence.back(), points[i])) {
                 fence.pop_back();
             }
-            if (!checkAreOnLine(fence[fence.size() - 2], fence.back(), points[i]) ||
-                checkOnePointAfterTwoOthers(fence[fence.size() - 2], fence.back(), points[i])) {
+            //if (!checkAreOnLine(fence[fence.size() - 2], fence.back(), points[i]) ||
+             //   checkOnePointAfterTwoOthers(fence[fence.size() - 2], fence.back(), points[i])) {
                 fence.push_back(points[i]);
-            }
+            //}
             
         }
         double fenceLength = getLength(fence.back(), fence.front());
-        if (checkAreOnLine(points[0], fence.back(), fence[fence.size() - 2])) {
-            std::cout << getLength(fence.front(), fence.back()) << std::endl;
-        } else {
+//        if (checkAreOnLine(points[0], fence.back(), fence[fence.size() - 2])) {
+//            std::cout << getLength(fence.front(), fence.back()) << std::endl;
+//        } else {
             while (fence.size() > 1) {
                 Point topPoint = fence.back();
                 fence.pop_back();
                 fenceLength += getLength(fence.back(), topPoint);
             }
             std::cout << std::setprecision(10) << fenceLength << std::endl;
-        }
+//        }
     }
     
 }
@@ -151,12 +151,16 @@ double getLength(const Point& a, const Point& b) {
 }
 
 bool cmp(const Point &a, const Point &b) {
-//    Point v1(a.x - begin.x, a.y - begin.y);
-//    Point v2(b.x - begin.x, b.y - begin.y);
+    Point v1(a.x - begin.x, a.y - begin.y);
+    Point v2(b.x - begin.x, b.y - begin.y);
 //    long long product = v1.x * v2.y - v1.y * v2.x;
-    long long product = crossProduct(Point(a.x - begin.x, a.y - begin.y), Point(b.x - begin.x, b.y - begin.y));
+    long long product = crossProduct(v1, v2);
     if (product == 0) {
-        return a.x * a.x + a.y * a.y > b.x * b.x + b.y * b.y;
+        if (v1 == Point(0, 0))
+            return true;
+        if (v2 == Point(0, 0))
+            return false;
+        return v1.x * v1.x + v1.y * v1.y > v2.x * v2.x + v2.y * v2.y;
     }
     return product > 0;
 }
