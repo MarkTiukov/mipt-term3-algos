@@ -136,6 +136,9 @@ bool checkOnePointAfterTwoOthers(const Point& a, const Point& b,const Point& c) 
 
 bool checkLeftRotation(const Point& a, const Point& b,const Point& c) {
     auto product = crossProduct(Point(b.x - a.x, b.y - a.y), Point(c.x - b.x, c.y - b.y));
+//    if (product == 0 && !checkOnePointAfterTwoOthers(a, b, c)) {
+//        return getLength(b, c) < getLength(a, b);
+//    }
     return product >= 0;
 }
 
@@ -153,7 +156,7 @@ bool cmp(const Point &a, const Point &b) {
 //    long long product = v1.x * v2.y - v1.y * v2.x;
     long long product = crossProduct(Point(a.x - begin.x, a.y - begin.y), Point(b.x - begin.x, b.y - begin.y));
     if (product == 0) {
-        return a.x * a.x + a.y * a.y < b.x * b.x + b.y * b.y;
+        return a.x * a.x + a.y * a.y > b.x * b.x + b.y * b.y;
     }
     return product > 0;
 }
