@@ -52,7 +52,12 @@ long long crossProduct(const MyVector& v1, const MyVector& v2);
 void readAndProcessData(std::vector<Point> &points);
 double getLength(const Point& a, const Point& b);
 bool checkLeftRotation(const Point& a, const Point& b,const Point& c);
+template<typename T>
+size_t getPrelastElementIndex(const std::deque<T>& container) {
+    return container.size() - 2;
+}
 void printMinFence(const std::vector<Point> &points);
+
 
 int main() {
     std::vector<Point> points;
@@ -67,13 +72,8 @@ void readAndProcessData(std::vector<Point> &points) {
     size_t min_position = 0;
     for (size_t i = 0; i < n; ++i) {
         std::cin >> points[i].x >> points[i].y;
-        if (i == 0) {
-            min_position = 0;
-        }
-        else {
-            if (points[i] < points[min_position])
-                min_position = i;
-        }
+        if (points[i] < points[min_position])
+            min_position = i;
     }
     std::swap(points[0], points[min_position]);
     begin = points[0];
@@ -99,31 +99,30 @@ bool operator<(const Point& one, const Point& another) {
     return result;
 }
 
+
+
 void printMinFence(const std::vector<Point> &points) {
     std::deque<Point> fence = std::deque<Point>({points[0]});
     size_t secondElementPosition = 1;
     while (secondElementPosition < points.size() && points[secondElementPosition] == points[0])
         ++secondElementPosition;
-    if (secondElementPosition == points.size()) {
-        std::cout << "0" << std::endl;;
-    } else {
-        fence.push_back(points[secondElementPosition++]);
-        for (size_t i = secondElementPosition; i < points.size(); ++i) {
-            if (fence.back() == points[i])
-                continue;
-            while (!checkLeftRotation(fence[fence.size() - 2], fence.back(), points[i])) {
-                fence.pop_back();
-            }
-            fence.push_back(points[i]);
-        }
-        double fenceLength = getLength(fence.back(), fence.front());
-        while (fence.size() > 1) {
-            Point topPoint = fence.back();
+    fence.push_back(points[secondElementPosition++]);
+    for (size_t i = secondElementPosition; i < points.size(); ++i) {
+        if (fence.back() == points[i])
+            continue;
+        while (!checkLeftRotation(fence[getPrelastElementIndex<Point>(fence)], fence.back(), points[i])) {
             fence.pop_back();
-            fenceLength += getLength(fence.back(), topPoint);
         }
-        std::cout << std::setprecision(fOUTPUT_PRECISION) << fenceLength << std::endl;
+        fence.push_back(points[i]);
     }
+    double fenceLength = getLength(fence.back(), fence.front());
+    while (fence.size() > 1) {
+        Point topPoint = fence.back();
+        fence.pop_back();
+        fenceLength += getLength(fence.back(), topPoint);
+    }
+    std::cout << std::setprecision(fOUTPUT_PRECISION) << fenceLength << std::endl;
+
     
 }
 
