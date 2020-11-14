@@ -5,13 +5,36 @@
 #include <deque>
 #include <iomanip>
 
+const size_t fOUTPUT_PRECISION = 10;
+
 struct Point {
     long long x, y;
     
     Point() = default;
     Point(long long x, long long y) : x(x), y(y) {}
     
+    Point& operator-=(const Point& another);
 };
+
+struct MyVector {
+    Point begin;
+    Point end;
+    long long x, y;
+    
+    MyVector() = default;
+    MyVector(const Point& begin, const Point& end) : begin(begin), end(end),
+                                                     x(begin.x - end.x),
+                                                     y(begin.y - end.y) {}
+    MyVector(const Point& radiusVector) : end(radiusVector),
+                                          x(radiusVector.x),
+                                          y(radiusVector.y) {}
+    MyVector(long long x, long long y) : x(x), y(y), end(Point(x, y)) {}
+    
+};
+
+bool operator==(const MyVector& one, const MyVector& another);
+bool operator!=(const MyVector& one, const MyVector& another);
+
 
 extern std::ostream& operator<<(std::ostream& outputStream, const Point& point);
 
@@ -19,24 +42,25 @@ bool operator<(const Point& one, const Point& another);
 bool operator>(const Point& one, const Point& another);
 bool operator==(const Point& one, const Point& another);
 bool operator!=(const Point& one, const Point& another);
+Point operator-(const Point& one, const Point& another);
 
 Point begin;
 
 bool cmp(const Point &a, const Point &b);
-long long crossProduct(const Point& v1, const Point& v2);
+long long crossProduct(const MyVector& v1, const MyVector& v2);
 
-void readData(std::vector<Point> &points);
+void readAndProcessData(std::vector<Point> &points);
 double getLength(const Point& a, const Point& b);
 bool checkLeftRotation(const Point& a, const Point& b,const Point& c);
 void printMinFence(const std::vector<Point> &points);
 
 int main() {
     std::vector<Point> points;
-    readData(points);
+    readAndProcessData(points);
     printMinFence(points);
 }
 
-void readData(std::vector<Point> &points) {
+void readAndProcessData(std::vector<Point> &points) {
     size_t n;
     std::cin >> n;
     points = std::vector<Point>(n);
@@ -98,7 +122,7 @@ void printMinFence(const std::vector<Point> &points) {
             fence.pop_back();
             fenceLength += getLength(fence.back(), topPoint);
         }
-        std::cout << std::setprecision(10) << fenceLength << std::endl;
+        std::cout << std::setprecision(fOUTPUT_PRECISION) << fenceLength << std::endl;
     }
     
 }
@@ -109,7 +133,7 @@ extern std::ostream& operator<<(std::ostream& outputStream, const Point& point) 
 }
 
 bool checkLeftRotation(const Point& a, const Point& b,const Point& c) {
-    auto product = crossProduct(Point(b.x - a.x, b.y - a.y), Point(c.x - b.x, c.y - b.y));
+    auto product = crossProduct(MyVector(b - a), MyVector(c - a));
     return product >= 0;
 }
 
@@ -118,19 +142,39 @@ double getLength(const Point& a, const Point& b) {
 }
 
 bool cmp(const Point &a, const Point &b) {
-    Point v1(a.x - begin.x, a.y - begin.y);
-    Point v2(b.x - begin.x, b.y - begin.y);
+    MyVector v1(a - begin);
+    MyVector v2(b - begin);
     long long product = crossProduct(v1, v2);
     if (product == 0) {
-        if (v1 == Point(0, 0))
+        if (v1 == MyVector(0, 0))
             return true;
-        if (v2 == Point(0, 0))
+        if (v2 == MyVector(0, 0))
             return false;
         return v1.x * v1.x + v1.y * v1.y > v2.x * v2.x + v2.y * v2.y;
     }
     return product > 0;
 }
 
-long long crossProduct(const Point& v1, const Point& v2) {
+long long crossProduct(const MyVector& v1, const MyVector& v2) {
     return v1.x * v2.y - v1.y * v2.x;
+}
+
+Point& Point::operator-=(const Point& another) {
+    this->x -= another.x;
+    this->y -= another.y;
+    return *this;
+}
+
+Point operator-(const Point& one, const Point& another) {
+    Point result = one;
+    result -= another;
+    return result;
+}
+
+bool operator==(const MyVector& one, const MyVector& another) {
+    return one.x == another.x && one.y == another.y;
+}
+
+bool operator!=(const MyVector& one, const MyVector& another) {
+    return !(one == another);
 }
