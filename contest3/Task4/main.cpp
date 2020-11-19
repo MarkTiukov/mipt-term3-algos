@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <iomanip>
 
 class Point {
 public:
@@ -76,7 +77,8 @@ public:
     Polygon& operator+=(const Point& newPoint);
     Polygon operator+(const Point& newPoint) const;
     
-    double getSquare();
+    void sort();
+    double getSquare() const;
 };
 
 std::istream& operator>>(std::istream& in, Polygon& polygon);
@@ -85,7 +87,10 @@ int main() {
     Polygon A, B;
     std::cin >> A >> B;
     std::cout << "started:" << std::endl;
+    A.sort();
+    B.sort();
     Polygon sum = A + B;
+    std::cout << std::setprecision(10) << A.getSquare() << " " << B.getSquare() << " " << sum.getSquare() << std::endl;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,16 +122,12 @@ Polygon& Polygon::operator+=(const Polygon& other) {
     // TODO: finish the realization of Minkowski addition
     size_t n = points.size();
     size_t m = points.size();
-    std::sort(points.begin(), points.end(), LowerAndToTheLeftComparator(this));
-    std::sort(++points.begin(), points.end(), AngleComparator(this, points[0]));
     Polygon otherCopy = other;
-    std::sort(otherCopy.points.begin(), otherCopy.points.end(), LowerAndToTheLeftComparator(this));
-    std::sort(++otherCopy.points.begin(), otherCopy.points.end(), AngleComparator(this, otherCopy.points[0]));
     *this += points[0];
     otherCopy += other.points[0];
     std::vector<Point> result;
-    for (int i = 0, j = 0; i < n && j < m;) {
-        result.emplace_back(points[i] + points[j]);
+    for (size_t i = 0, j = 0; i < n || j < m;) {
+        result.emplace_back(points[i] + otherCopy.points[j]);
         Vector v1(points[i], points[i + 1]), v2(otherCopy.points[j], otherCopy.points[j + 1]);
         if (Vector::areCollinear(v1, v2)) {
             ++i;
@@ -138,7 +139,6 @@ Polygon& Polygon::operator+=(const Polygon& other) {
         }
     }
     this->points = result;
-    std::cout << points.size() << std::endl;
     return *this;
 }
 
@@ -148,10 +148,14 @@ Polygon Polygon::operator+(const Polygon& other) const {
     return result;
 }
 
-double Polygon::getSquare() {
+double Polygon::getSquare() const {
     // TODO: add counting the square
-    double result = 0;
-    return result;
+    size_t n = points.size();
+    double result = (points[n - 1].x - points[0].x) * (points[0].y + points[n - 1].y);
+    for (size_t i = 0; i < points.size() - 1; ++i) {
+        result += (points[i].x - points[i + 1].x) * (points[i + 1].y + points[i].y);
+    }
+    return result / 2;
 }
 
 bool Polygon::isLowerAndToTheLeft(const Point& p1, const Point& p2) {
@@ -175,6 +179,12 @@ bool Polygon::compareByAngle(const Vector &v1, const Vector &v2) {
     }
     return product > 0;
 }
+
+void Polygon::sort() {
+    std::sort(points.begin(), points.end(), LowerAndToTheLeftComparator(this));
+    std::sort(++points.begin(), points.end(), AngleComparator(this, points[0]));
+}
+
 
 
 bool Vector::operator==(const Vector& another) const {
@@ -214,6 +224,6 @@ Point& Point::operator+=(const Point& other) {
 
 Point Point::operator+(const Point& other) const {
     Point result = *this;
-    result -= other;
+    result += other;
     return result;
 }
