@@ -16,25 +16,33 @@ struct Point {
     Point& operator-=(const Point& another);
 };
 
-struct MyVector {
+class Vector {
+private:
     Point begin;
     Point end;
     long long x, y;
+public:
     
-    MyVector() = default;
-    MyVector(const Point& begin, const Point& end) : begin(begin), end(end),
-                                                     x(begin.x - end.x),
-                                                     y(begin.y - end.y) {}
-    MyVector(const Point& radiusVector) : end(radiusVector),
-                                          x(radiusVector.x),
-                                          y(radiusVector.y) {}
-    MyVector(long long x, long long y) : x(x), y(y), end(Point(x, y)) {}
+    Vector() = default;
+    Vector(const Point& begin, const Point& end) : begin(begin), end(end),
+                                                   x(end.x - begin.x),
+                                                   y(end.y - begin.y) {}
+    Vector(const Point& radiusVector) : end(radiusVector),
+                                        x(radiusVector.x),
+                                        y(radiusVector.y) {}
+    Vector(long long x, long long y) : x(x), y(y), end(Point(x, y)) {}
+    
+    long long getX() const { return x; }
+    long long getY() const { return y; }
+    Point getBegin() const { return begin; }
+    Point getEnd() const { return end; }
+    
+    bool operator==(const Vector& another) const;
+    bool operator!=(const Vector& another) const;
+    
+    static long long crossProduct(const Vector& v1, const Vector& v2);
     
 };
-
-bool operator==(const MyVector& one, const MyVector& another);
-bool operator!=(const MyVector& one, const MyVector& another);
-
 
 extern std::ostream& operator<<(std::ostream& outputStream, const Point& point);
 
@@ -47,7 +55,6 @@ Point operator-(const Point& one, const Point& another);
 Point begin;
 
 bool cmp(const Point &a, const Point &b);
-long long crossProduct(const MyVector& v1, const MyVector& v2);
 
 void readAndProcessData(std::vector<Point> &points);
 double getLength(const Point& a, const Point& b);
@@ -132,7 +139,7 @@ extern std::ostream& operator<<(std::ostream& outputStream, const Point& point) 
 }
 
 bool checkLeftRotation(const Point& a, const Point& b,const Point& c) {
-    auto product = crossProduct(MyVector(b - a), MyVector(c - a));
+    auto product = Vector::crossProduct(Vector(b - a), Vector(c - a));
     return product >= 0;
 }
 
@@ -141,22 +148,23 @@ double getLength(const Point& a, const Point& b) {
 }
 
 bool cmp(const Point &a, const Point &b) {
-    MyVector v1(a - begin);
-    MyVector v2(b - begin);
-    long long product = crossProduct(v1, v2);
+    Vector v1(a - begin);
+    Vector v2(b - begin);
+    long long product = Vector::crossProduct(v1, v2);
     if (product == 0) {
-        if (v1 == MyVector(0, 0))
+        if (v1 == Vector(0, 0))
             return true;
-        if (v2 == MyVector(0, 0))
+        if (v2 == Vector(0, 0))
             return false;
-        return v1.x * v1.x + v1.y * v1.y > v2.x * v2.x + v2.y * v2.y;
+        return v1.getX() * v1.getX() + v1.getY() * v1.getY() > v2.getX() * v2.getX() + v2.getY() * v2.getY() ;
     }
     return product > 0;
 }
 
-long long crossProduct(const MyVector& v1, const MyVector& v2) {
+long long Vector::crossProduct(const Vector& v1, const Vector& v2) {
     return v1.x * v2.y - v1.y * v2.x;
 }
+
 
 Point& Point::operator-=(const Point& another) {
     this->x -= another.x;
@@ -170,10 +178,10 @@ Point operator-(const Point& one, const Point& another) {
     return result;
 }
 
-bool operator==(const MyVector& one, const MyVector& another) {
-    return one.x == another.x && one.y == another.y;
+bool Vector::operator==(const Vector& another) const {
+    return this->x == another.x && this->y == another.y;
 }
 
-bool operator!=(const MyVector& one, const MyVector& another) {
-    return !(one == another);
+bool Vector::operator!=(const Vector& another) const {
+    return !(*this == another);
 }
