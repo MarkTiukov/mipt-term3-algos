@@ -40,7 +40,7 @@ public:
     bool operator==(const Vector& another) const;
     bool operator!=(const Vector& another) const;
     
-    static long long crossProduct(const Vector& v1, const Vector& v2);
+    static long long zCoordinateOfCrossProduct(const Vector& v1, const Vector& v2);
     
 };
 
@@ -139,7 +139,7 @@ extern std::ostream& operator<<(std::ostream& outputStream, const Point& point) 
 }
 
 bool checkLeftRotation(const Point& a, const Point& b,const Point& c) {
-    auto product = Vector::crossProduct(Vector(b - a), Vector(c - a));
+    auto product = Vector::zCoordinateOfCrossProduct(Vector(b - a), Vector(c - a));
     return product >= 0;
 }
 
@@ -150,7 +150,7 @@ double getLength(const Point& a, const Point& b) {
 bool cmp(const Point &a, const Point &b) {
     Vector v1(a - begin);
     Vector v2(b - begin);
-    long long product = Vector::crossProduct(v1, v2);
+    long long product = Vector::zCoordinateOfCrossProduct(v1, v2);
     if (product == 0) {
         if (v1 == Vector(0, 0))
             return true;
@@ -161,7 +161,7 @@ bool cmp(const Point &a, const Point &b) {
     return product > 0;
 }
 
-long long Vector::crossProduct(const Vector& v1, const Vector& v2) {
+long long Vector::zCoordinateOfCrossProduct(const Vector& v1, const Vector& v2) {
     return v1.x * v2.y - v1.y * v2.x;
 }
 
