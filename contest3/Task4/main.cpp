@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <iomanip>
 
-static const long double PRECISION = 1e-6;
-
 class Point {
 public:
     long long x, y;
@@ -19,10 +17,12 @@ public:
     
 };
 
-struct Vector {
+class Vector {
+private:
     Point begin;
     Point end;
     long long x, y;
+public:
     
     Vector() = default;
     Vector(const Point& begin, const Point& end) : begin(begin), end(end),
@@ -33,12 +33,17 @@ struct Vector {
     y(radiusVector.y) {}
     Vector(long long x, long long y) : x(x), y(y), end(Point(x, y)) {}
     
-    static long long crossProduct(const Vector& v1, const Vector& v2);
-    static bool areCollinear(const Vector& v1, const Vector& v2);
+    long long getX() const { return x; }
+    long long getY() const { return y; }
+    Point getBegin() const { return begin; }
+    Point getEnd() const { return end; }
     
     bool operator==(const Vector& another) const;
     bool operator!=(const Vector& another) const;
     
+    static long long crossProduct(const Vector& v1, const Vector& v2);
+    static bool areCollinear(const Vector& v1, const Vector& v2);
+
 };
 
 class Polygon {
@@ -184,7 +189,7 @@ bool Polygon::compareByAngle(const Vector &v1, const Vector &v2) {
             return true;
         if (v2 == Vector(0, 0))
             return false;
-        return v1.x * v1.x + v1.y * v1.y > v2.x * v2.x + v2.y * v2.y;
+        return v1.getX() * v1.getX() + v1.getY() * v1.getY() > v2.getX() * v2.getX() + v2.getY() * v2.getY();
     }
     return product > 0;
 }
