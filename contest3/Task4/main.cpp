@@ -86,11 +86,10 @@ std::istream& operator>>(std::istream& in, Polygon& polygon);
 int main() {
     Polygon A, B;
     std::cin >> A >> B;
-    std::cout << "started:" << std::endl;
     A.sort();
     B.sort();
     Polygon sum = A + B;
-    std::cout << std::setprecision(10) << A.getSquare() << " " << B.getSquare() << " " << sum.getSquare() << std::endl;
+    std::cout << std::fixed << std::setprecision(6) << (sum.getSquare() - A.getSquare() - B.getSquare()) / 2 << std::endl;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,14 +118,14 @@ Polygon Polygon::operator+(const Point& newPoint) const {
 }
 
 Polygon& Polygon::operator+=(const Polygon& other) {
-    // TODO: finish the realization of Minkowski addition
     size_t n = points.size();
-    size_t m = points.size();
+    size_t m = other.points.size();
     Polygon otherCopy = other;
     *this += points[0];
     otherCopy += other.points[0];
     std::vector<Point> result;
-    for (size_t i = 0, j = 0; i < n || j < m;) {
+    size_t i = 0, j = 0;
+    while (i < n && j < m) {
         result.emplace_back(points[i] + otherCopy.points[j]);
         Vector v1(points[i], points[i + 1]), v2(otherCopy.points[j], otherCopy.points[j + 1]);
         if (Vector::areCollinear(v1, v2)) {
@@ -137,6 +136,14 @@ Polygon& Polygon::operator+=(const Polygon& other) {
         } else {
             ++j;
         }
+    }
+    while (i < n) {
+        result.emplace_back(points[i] + otherCopy.points[j]);
+        ++i;
+    }
+    while (j < m) {
+        result.emplace_back(points[i] + otherCopy.points[j]);
+        ++j;
     }
     this->points = result;
     return *this;
