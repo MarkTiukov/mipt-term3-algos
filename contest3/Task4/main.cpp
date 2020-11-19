@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <iomanip>
 
+static const long double PRECISION = 1e-6;
+
 class Point {
 public:
     long long x, y;
@@ -78,7 +80,7 @@ public:
     Polygon operator+(const Point& newPoint) const;
     
     void sort();
-    double getSquare() const;
+    long double getSquare() const;
 };
 
 std::istream& operator>>(std::istream& in, Polygon& polygon);
@@ -155,10 +157,10 @@ Polygon Polygon::operator+(const Polygon& other) const {
     return result;
 }
 
-double Polygon::getSquare() const {
+long double Polygon::getSquare() const {
     // TODO: add counting the square
     size_t n = points.size();
-    double result = (points[n - 1].x - points[0].x) * (points[0].y + points[n - 1].y);
+    long double result = (points[n - 1].x - points[0].x) * (points[0].y + points[n - 1].y);
     for (size_t i = 0; i < points.size() - 1; ++i) {
         result += (points[i].x - points[i + 1].x) * (points[i + 1].y + points[i].y);
     }
