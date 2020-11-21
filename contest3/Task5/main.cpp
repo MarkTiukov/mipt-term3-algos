@@ -60,9 +60,9 @@ public:
     long long getY(long long x) const;
     long long getMin() const;
     long long getMax() const;
-    bool haveIntersectionByX(const Segment& other) const;
-    bool haveIntersectionByY(const Segment& other) const;
-    bool haveIntersectionWith(const Segment& other) const;
+    bool hasIntersectionByX(const Segment& other) const;
+    bool hasIntersectionByY(const Segment& other) const;
+    bool hasIntersectionWith(const Segment& other) const;
     
     bool operator<(const Segment& other) const;
     
@@ -105,14 +105,14 @@ int main() {
     std::cin >> n;
     std::vector<Segment> segments;
     for (size_t i = 0; i < n; ++i) {
-        segments.emplace_back(i + 1);
+        segments.emplace_back(i);
         std::cin >> segments[i];
     }
     IntersectionFinder solution;
     bool intersect;
     auto answer = solution.findAnyIntersection(segments, intersect);
     if (intersect)
-        std::cout << "YES\n" << answer.first.id << " " << answer.second.id << std::endl;
+        std::cout << "YES\n" << answer.first.id + 1 << " " << answer.second.id + 1 << std::endl;
     else
         std::cout << "NO" << std::endl;
 }
@@ -177,13 +177,19 @@ std::pair<Segment, Segment> IntersectionFinder::findAnyIntersection(const std::v
     for (auto event : events) {
         size_t currentID = event.getID();
         if (event.getType() == EventType::ADD) {
-            std::set<Segment>::iterator nextSegment = currentSegments.lower_bound(segments[currentID]);
-            std::set<Segment>::iterator prevSegment = prev(nextSegment);
-            if (nextSegment != currentSegments.end() && (*nextSegment).haveIntersectionWith(segments[currentID]))
-                return std::make_pair(*nextSegment, segments[currentID]);
-            if (prevSegment != currentSegments.end() && (*prevSegment).haveIntersectionWith(segments[currentID]))
-                return std::make_pair(*prevSegment, segments[currentID]);
-            segmentsInSet[currentID] = currentSegments.insert(nextSegment, segments[currentID]);
+            auto nextSegmentIterator = currentSegments.lower_bound(segments[currentID]);
+            auto prevSegmentIterator = prev(nextSegmentIterator);
+            if (nextSegmentIterator != currentSegments.end() && (*nextSegmentIterator).hasIntersectionWith(segments[currentID]))
+                return std::make_pair(*nextSegmentIterator, segments[currentID]);
+            if (prevSegmentIterator != currentSegments.end() && (*prevSegmentIterator).hasIntersectionWith(segments[currentID]))
+                return std::make_pair(*prevSegmentIterator, segments[currentID]);
+            segmentsInSet[currentID] = currentSegments.insert(nextSegmentIterator, segments[currentID]);
+        } else if (event.getType() == EventType::REMOVE) {
+            auto nextSegmentIterator = next(segmentsInSet[currentID]);
+            auto prevSegmentIterator = prev(segmentsInSet[currentID]);
+            if (nextSegmentIterator != currentSegments.end() && prevSegmentIterator != currentSegments.end() &&
+                (*prevSegmentIterator).hasIntersectionWith(*nextSegmentIterator))
+                return std::make_pair(*prevSegmentIterator, *nextSegmentIterator);
         }
     }
     hasFound = false;
@@ -205,18 +211,18 @@ bool Segment::operator<(const Segment& other) const {
     return getY(x) < other.getY(x);
 }
 
-bool Segment::haveIntersectionWith(const Segment &other) const {
+bool Segment::hasIntersectionWith(const Segment &other) const {
     bool result = false;
-    if (haveIntersectionByX(other) && haveIntersectionByY(other))
+    if (hasIntersectionByX(other) && hasIntersectionByY(other))
         if (Vector::zCoordinateOfCrossProduct(begin, end, other.begin) *
             Vector::zCoordinateOfCrossProduct(begin, end, other.end) <= 0 &&
             Vector::zCoordinateOfCrossProduct(other.begin, other.end, begin) *
             Vector::zCoordinateOfCrossProduct(other.begin, other.end, end) <= 0)
             result = true;
-    return true;
+    return result;
 }
 
-bool Segment::haveIntersectionByX(const Segment &other) const {
+bool Segment::hasIntersectionByX(const Segment &other) const {
     long long leftEnd1 = std::min(begin.x, end.x);
     long long rightEnd1 = std::max(begin.x, end.x);
     long long leftEnd2 = std::min(other.begin.x, other.end.x);
@@ -224,7 +230,7 @@ bool Segment::haveIntersectionByX(const Segment &other) const {
     return std::max(leftEnd1, leftEnd2) <= std::min(rightEnd1, rightEnd2);
 }
 
-bool Segment::haveIntersectionByY(const Segment &other) const {
+bool Segment::hasIntersectionByY(const Segment &other) const {
     long long lowerEnd1 = std::min(begin.y, end.y);
     long long upperEnd1 = std::max(begin.y, end.y);
     long long lowerEnd2 = std::min(other.begin.y, other.end.y);
