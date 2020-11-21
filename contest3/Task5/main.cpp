@@ -118,7 +118,7 @@ int main() {
 }
 
 long long Segment::getY(long long x) const {
-    if (begin == end)
+    if (begin.x == end.x)
         return begin.y;
     return begin.y + (end.y - begin.y) * (x - begin.x) / (end.x - begin.x);
 }
