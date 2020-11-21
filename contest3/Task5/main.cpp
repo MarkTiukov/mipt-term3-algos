@@ -51,11 +51,11 @@ public:
 class Segment {
 private:
     Point begin, end;
-    
 public:
+    const size_t id;
     
-    Segment() = default;
-    Segment(const Point& begin, const Point& end) : begin(begin), end(end) {}
+    Segment(size_t id) : id(id) {}
+    Segment(const Point& begin, const Point& end, size_t id) : begin(begin), end(end), id(id) {}
     
     long long getY(long long x) const;
     long long getMin() const;
@@ -103,15 +103,16 @@ public:
 int main() {
     size_t n;
     std::cin >> n;
-    std::vector<Segment> segments(n);
+    std::vector<Segment> segments;
     for (size_t i = 0; i < n; ++i) {
+        segments.emplace_back(i + 1);
         std::cin >> segments[i];
     }
     IntersectionFinder solution;
     bool intersect;
     auto answer = solution.findAnyIntersection(segments, intersect);
     if (intersect)
-        std::cout << "YES\n" << answer.first << "\n" << answer.second << std::endl;
+        std::cout << "YES\n" << answer.first.id << " " << answer.second.id << std::endl;
     else
         std::cout << "NO" << std::endl;
 }
@@ -186,7 +187,7 @@ std::pair<Segment, Segment> IntersectionFinder::findAnyIntersection(const std::v
         }
     }
     hasFound = false;
-    return std::make_pair(Segment(), Segment());
+    return std::make_pair(Segment(0), Segment(0));
 }
 
 std::set<Segment>::iterator IntersectionFinder::prev(std::set<Segment>::iterator it) {
