@@ -197,6 +197,7 @@ std::pair<Segment, Segment> IntersectionFinder::findAnyIntersection(const std::v
             if (nextSegmentIterator != currentSegments.end() && prevSegmentIterator != currentSegments.end() &&
                 (*prevSegmentIterator).hasIntersectionWith(*nextSegmentIterator))
                 return std::make_pair(*prevSegmentIterator, *nextSegmentIterator);
+            currentSegments.erase(segmentsInSet[currentID]);
         }
     }
     hasFound = false;
