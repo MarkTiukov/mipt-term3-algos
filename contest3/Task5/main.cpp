@@ -3,6 +3,8 @@
 #include <vector>
 #include <set>
 
+const static double PRECISION = 1e-6;
+
 struct Point {
     long long x, y;
     
@@ -57,7 +59,7 @@ public:
     Segment(size_t id) : id(id) {}
     Segment(const Point& begin, const Point& end, size_t id) : begin(begin), end(end), id(id) {}
     
-    long long getY(long long x) const;
+    double getY(long long x) const;
     long long getMin() const;
     long long getMax() const;
     bool hasIntersectionByX(const Segment& other) const;
@@ -117,10 +119,15 @@ int main() {
         std::cout << "NO" << std::endl;
 }
 
-long long Segment::getY(long long x) const {
+double Segment::getY(long long x) const {
     if (begin.x == end.x)
         return begin.y;
-    return begin.y + (end.y - begin.y) * (x - begin.x) / (end.x - begin.x);
+    double by = (double) begin.y;
+    double bx = (double) begin.x;
+    double ey = (double) end.y;
+    double ex = (double) end.x;
+    
+    return by + (ey - by) * (x - bx) / (ex - bx);
 }
 
 long long Segment::getMin() const {
@@ -177,16 +184,16 @@ std::pair<Segment, Segment> IntersectionFinder::findAnyIntersection(const std::v
     for (auto event : events) {
         size_t currentID = event.getID();
         if (event.getType() == EventType::ADD) {
-            auto nextSegmentIterator = currentSegments.lower_bound(segments[currentID]);
-            auto prevSegmentIterator = prev(nextSegmentIterator);
+            std::set<Segment>::iterator nextSegmentIterator = currentSegments.lower_bound(segments[currentID]);
+            std::set<Segment>::iterator prevSegmentIterator = prev(nextSegmentIterator);
             if (nextSegmentIterator != currentSegments.end() && (*nextSegmentIterator).hasIntersectionWith(segments[currentID]))
                 return std::make_pair(*nextSegmentIterator, segments[currentID]);
             if (prevSegmentIterator != currentSegments.end() && (*prevSegmentIterator).hasIntersectionWith(segments[currentID]))
                 return std::make_pair(*prevSegmentIterator, segments[currentID]);
             segmentsInSet[currentID] = currentSegments.insert(nextSegmentIterator, segments[currentID]);
         } else if (event.getType() == EventType::REMOVE) {
-            auto nextSegmentIterator = next(segmentsInSet[currentID]);
-            auto prevSegmentIterator = prev(segmentsInSet[currentID]);
+            std::set<Segment>::iterator nextSegmentIterator = next(segmentsInSet[currentID]);
+            std::set<Segment>::iterator prevSegmentIterator = prev(segmentsInSet[currentID]);
             if (nextSegmentIterator != currentSegments.end() && prevSegmentIterator != currentSegments.end() &&
                 (*prevSegmentIterator).hasIntersectionWith(*nextSegmentIterator))
                 return std::make_pair(*prevSegmentIterator, *nextSegmentIterator);
@@ -207,8 +214,8 @@ std::set<Segment>::iterator IntersectionFinder::next(std::set<Segment>::iterator
 }
 
 bool Segment::operator<(const Segment& other) const {
-    long long x = std::max(std::min(begin.x, end.x), std::min(other.begin.x, other.end.x));
-    return getY(x) < other.getY(x);
+    double x = std::max(std::min(begin.x, end.x), std::min(other.begin.x, other.end.x));
+    return getY(x) < other.getY(x) - PRECISION;
 }
 
 bool Segment::hasIntersectionWith(const Segment &other) const {
