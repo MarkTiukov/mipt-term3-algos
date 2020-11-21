@@ -3,7 +3,8 @@
 #include <vector>
 #include <set>
 
-const static double PRECISION = 1e-6;
+static const double PRECISION = 1e-6;
+static const int numerationShift = 1;
 
 struct Point {
     long long x, y;
@@ -59,7 +60,7 @@ public:
     Segment(size_t id) : id(id) {}
     Segment(const Point& begin, const Point& end, size_t id) : begin(begin), end(end), id(id) {}
     
-    double getY(long long x) const;
+    double getY(double x) const;
     long long getMin() const;
     long long getMax() const;
     bool hasIntersectionByX(const Segment& other) const;
@@ -101,33 +102,26 @@ public:
     std::pair<Segment, Segment> findAnyIntersection(const std::vector<Segment>& segments, bool& hasFound);
 };
 
+std::vector<Segment> readSegments();
+
+void printResult(std::pair<Segment, Segment> result);
+void printResult();
 
 int main() {
-    size_t n;
-    std::cin >> n;
-    std::vector<Segment> segments;
-    for (size_t i = 0; i < n; ++i) {
-        segments.emplace_back(i);
-        std::cin >> segments[i];
-    }
-    IntersectionFinder solution;
-    bool intersect;
-    auto answer = solution.findAnyIntersection(segments, intersect);
-    if (intersect)
-        std::cout << "YES\n" << answer.first.id + 1 << " " << answer.second.id + 1 << std::endl;
+    auto segments = readSegments();
+    IntersectionFinder intersectionFinder;
+    bool doIntersect;
+    auto answer = intersectionFinder.findAnyIntersection(segments, doIntersect);
+    if (doIntersect)
+        printResult(answer);
     else
-        std::cout << "NO" << std::endl;
+        printResult();
 }
 
-double Segment::getY(long long x) const {
+double Segment::getY(double x) const {
     if (begin.x == end.x)
         return begin.y;
-    double by = (double) begin.y;
-    double bx = (double) begin.x;
-    double ey = (double) end.y;
-    double ex = (double) end.x;
-    
-    return by + (ey - by) * (x - bx) / (ex - bx);
+    return begin.y + (end.y - begin.y) * (x - begin.x) / (end.x - begin.x);
 }
 
 long long Segment::getMin() const {
@@ -265,4 +259,23 @@ Point operator-(const Point& one, const Point& other) {
     Point result = one;
     result -= other;
     return result;
+}
+
+std::vector<Segment> readSegments() {
+    size_t n;
+    std::cin >> n;
+    std::vector<Segment> segments;
+    for (size_t i = 0; i < n; ++i) {
+        segments.emplace_back(i);
+        std::cin >> segments[i];
+    }
+    return segments;
+}
+
+void printResult(std::pair<Segment, Segment> result) {
+    std::cout << "YES\n" << result.first.id + numerationShift << " " << result.second.id + numerationShift << std::endl;
+}
+
+void printResult() {
+    std::cout << "NO" << std::endl;
 }
