@@ -12,8 +12,40 @@ struct Point {
     bool operator==(const Point& other) const;
     bool operator!=(const Point& other) const;
     
+    Point& operator-=(const Point& other);
+    friend Point operator-(const Point& one, const Point& other);
+    
     friend std::istream& operator>>(std::istream& input, Point& point);
     friend std::ostream& operator<<(std::ostream& output, const Point& segment);
+};
+
+class Vector {
+private:
+    Point begin;
+    Point end;
+    long long x, y;
+public:
+    
+    Vector() = default;
+    Vector(const Point& begin, const Point& end) : begin(begin), end(end),
+                                                   x(end.x - begin.x),
+                                                   y(end.y - begin.y) {}
+    Vector(const Point& radiusVector) : end(radiusVector),
+                                        x(radiusVector.x),
+                                        y(radiusVector.y) {}
+    Vector(long long x, long long y) : x(x), y(y), end(Point(x, y)) {}
+    
+    long long getX() const { return x; }
+    long long getY() const { return y; }
+    Point getBegin() const { return begin; }
+    Point getEnd() const { return end; }
+    
+    bool operator==(const Vector& another) const;
+    bool operator!=(const Vector& another) const;
+    
+    static long long zCoordinateOfCrossProduct(const Vector& v1, const Vector& v2);
+    static long long zCoordinateOfCrossProduct(const Point& begin, const Point& end1, const Point& end2);
+
 };
 
 class Segment {
@@ -28,7 +60,9 @@ public:
     long long getY(long long x) const;
     long long getMin() const;
     long long getMax() const;
-    bool haveItersection(const Segment& other) const;
+    bool haveIntersectionByX(const Segment& other) const;
+    bool haveIntersectionByY(const Segment& other) const;
+    bool haveIntersectionWith(const Segment& other) const;
     
     bool operator<(const Segment& other) const;
     
@@ -132,7 +166,7 @@ std::ostream& operator<<(std::ostream& output, const Point& point) {
 
 std::pair<Segment, Segment> IntersectionFinder::findAnyIntersection(const std::vector<Segment>& segments, bool& hasFound) {
     hasFound = true;
-    std::vector<std::set<Segment>::iterator> segmentsInSet;
+    std::vector<std::set<Segment>::iterator> segmentsInSet(segments.size());
     std::vector<Event> events;
     for (size_t i = 0; i < segments.size(); ++i) {
         events.emplace_back(segments[i].getMin(), EventType::ADD, i);
@@ -144,9 +178,9 @@ std::pair<Segment, Segment> IntersectionFinder::findAnyIntersection(const std::v
         if (event.getType() == EventType::ADD) {
             std::set<Segment>::iterator nextSegment = currentSegments.lower_bound(segments[currentID]);
             std::set<Segment>::iterator prevSegment = prev(nextSegment);
-            if (nextSegment != currentSegments.end() && (*nextSegment).haveItersection(segments[currentID]))
+            if (nextSegment != currentSegments.end() && (*nextSegment).haveIntersectionWith(segments[currentID]))
                 return std::make_pair(*nextSegment, segments[currentID]);
-            if (prevSegment != currentSegments.end() && (*prevSegment).haveItersection(segments[currentID]))
+            if (prevSegment != currentSegments.end() && (*prevSegment).haveIntersectionWith(segments[currentID]))
                 return std::make_pair(*prevSegment, segments[currentID]);
             segmentsInSet[currentID] = currentSegments.insert(nextSegment, segments[currentID]);
         }
@@ -170,8 +204,50 @@ bool Segment::operator<(const Segment& other) const {
     return getY(x) < other.getY(x);
 }
 
-bool Segment::haveItersection(const Segment &other) const {
-//    TODO: complete intersection
+bool Segment::haveIntersectionWith(const Segment &other) const {
+    bool result = false;
+    if (haveIntersectionByX(other) && haveIntersectionByY(other))
+        if (Vector::zCoordinateOfCrossProduct(begin, end, other.begin) *
+            Vector::zCoordinateOfCrossProduct(begin, end, other.end) <= 0 &&
+            Vector::zCoordinateOfCrossProduct(other.begin, other.end, begin) *
+            Vector::zCoordinateOfCrossProduct(other.begin, other.end, end) <= 0)
+            result = true;
     return true;
 }
 
+bool Segment::haveIntersectionByX(const Segment &other) const {
+    long long leftEnd1 = std::min(begin.x, end.x);
+    long long rightEnd1 = std::max(begin.x, end.x);
+    long long leftEnd2 = std::min(other.begin.x, other.end.x);
+    long long rightEnd2 = std::max(other.begin.x, other.end.x);
+    return std::max(leftEnd1, leftEnd2) <= std::min(rightEnd1, rightEnd2);
+}
+
+bool Segment::haveIntersectionByY(const Segment &other) const {
+    long long lowerEnd1 = std::min(begin.y, end.y);
+    long long upperEnd1 = std::max(begin.y, end.y);
+    long long lowerEnd2 = std::min(other.begin.y, other.end.y);
+    long long upperEnd2 = std::max(other.begin.y, other.end.y);
+    return std::max(lowerEnd1, lowerEnd2) <= std::min(upperEnd1, upperEnd2);
+}
+
+long long Vector::zCoordinateOfCrossProduct(const Vector& v1, const Vector& v2) {
+    return v1.x * v2.y - v1.y * v2.x;
+}
+
+long long Vector::zCoordinateOfCrossProduct(const Point &begin, const Point &end1, const Point &end2) {
+    return zCoordinateOfCrossProduct(Vector(end1 - begin), Vector(end2 - begin));
+}
+
+
+Point& Point::operator-=(const Point& other) {
+    this->x -= other.x;
+    this->y -= other.y;
+    return *this;
+}
+
+Point operator-(const Point& one, const Point& other) {
+    Point result = one;
+    result -= other;
+    return result;
+}
