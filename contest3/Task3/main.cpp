@@ -65,10 +65,10 @@ class ConvexHull {
 public:
     struct HullPoint: Point {
     private:
-        static int32_t totalNumber;
+        static size_t totalNumber;
         void rotateAroundThirdDimension(double& x, double& y, const double& angle);
     public:
-        int32_t id = totalNumber++;
+        size_t id = totalNumber++;
         HullPoint* prev = nullptr;
         HullPoint* next = nullptr;
         
@@ -89,7 +89,7 @@ private:
     double time(const HullPoint* a, const HullPoint* b, const HullPoint* c);
     bool antiClockwise(const HullPoint* a, const HullPoint* b, const HullPoint* c);
     void supportingRib(HullPoint*& u, HullPoint*& v);
-    std::vector<HullPoint*> mergeMovies(int64_t leftBorder, int64_t rightBorder);
+    std::vector<HullPoint*> merge(size_t leftBorder, size_t rightBorder);
     void buildConvexHull();
     std::vector<Face> buildConvexHull(bool toSwap);
     
@@ -106,7 +106,7 @@ public:
 
 };
 
-int32_t ConvexHull::HullPoint::totalNumber = 0;
+size_t ConvexHull::HullPoint::totalNumber = 0;
 
 int main() {
     size_t testsNumber;
@@ -159,18 +159,18 @@ void ConvexHull::supportingRib(HullPoint*& u, HullPoint*& v) {
     }
 }
 
-std::vector<ConvexHull::HullPoint*> ConvexHull::mergeMovies(int64_t leftBorder, int64_t rightBorder) {
+std::vector<ConvexHull::HullPoint*> ConvexHull::merge(size_t leftBorder, size_t rightBorder) {
     if (rightBorder - leftBorder <= 1)
         return std::vector<HullPoint*>();
-    const int64_t middle = (leftBorder + rightBorder) / 2;
-    const std::vector<HullPoint*> leftPart = mergeMovies(leftBorder, middle);
-    const std::vector<HullPoint*> rightPart = mergeMovies(middle, rightBorder);
+    const size_t middle = (leftBorder + rightBorder) / 2;
+    const std::vector<HullPoint*> leftPart = merge(leftBorder, middle);
+    const std::vector<HullPoint*> rightPart = merge(middle, rightBorder);
     std::vector<HullPoint*> movies;
     auto u = &points[middle - 1];
     auto v = &points[middle];
     supportingRib(u, v);
-    int64_t currentLeft = 0;
-    int64_t currentRight = 0;
+    size_t currentLeft = 0;
+    size_t currentRight = 0;
     for (auto currentTime = -INF; true;) {
         HullPoint* left = nullptr;
         HullPoint* right = nullptr;
@@ -187,9 +187,9 @@ std::vector<ConvexHull::HullPoint*> ConvexHull::mergeMovies(int64_t leftBorder, 
         times[3] = time(u, u->next, v);
         times[4] = time(u, v, v->next);
         times[5] = time(u, v->prev, v);
-        int64_t minTimePosition = 0;
+        size_t minTimePosition = 0;
         auto minTime = times[minTimePosition];
-        for (int64_t i = 1; i < times.size(); ++i) {
+        for (size_t i = 1; i < times.size(); ++i) {
             if (currentTime < times[i] && times[i] < minTime) {
                 minTimePosition = i;
                 minTime = times[minTimePosition];
@@ -255,7 +255,7 @@ std::vector<ConvexHull::HullPoint*> ConvexHull::mergeMovies(int64_t leftBorder, 
 
 std::vector<Face> ConvexHull::buildConvexHull(bool toSwap) {
     std::vector<Face> hull;
-    std::vector<HullPoint*> movies = mergeMovies(0, points.size());
+    std::vector<HullPoint*> movies = merge(0, points.size());
     for (HullPoint* HullPoint : movies) {
         Face face(HullPoint->prev->id, HullPoint->id, HullPoint->next->id);
         if (HullPoint->holdMovie() == !toSwap) {
