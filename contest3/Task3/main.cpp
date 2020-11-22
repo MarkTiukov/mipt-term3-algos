@@ -85,11 +85,12 @@ public:
     
 private:
     std::vector<HullPoint> points;
+    std::vector<HullPoint> originalPoints;
     std::vector<Face> hull;
     
     double time(const HullPoint* a, const HullPoint* b, const HullPoint* c);
-    bool antiClockwise(const HullPoint* a, const HullPoint* b, const HullPoint* c);
-    void supportingRib(HullPoint*& u, HullPoint*& v);
+    bool isLeftRotation(const HullPoint* a, const HullPoint* b, const HullPoint* c);
+    void findSupportingRib(HullPoint*& u, HullPoint*& v);
     std::vector<HullPoint*> merge(size_t leftBorder, size_t rightBorder);
     void buildConvexHull();
     std::vector<Face> buildConvexHull(bool toSwap);
@@ -101,7 +102,7 @@ public:
 
     std::vector<Face> getHull() const { return hull; }
     size_t getHullSize() const { return hull.size(); }
-    double distanceToInsidePoint(const Point& point, const std::vector<Point>& points) const;
+    double distanceToInsidePoint(const Point& point) const;
     
     friend std::ostream& operator<<(std::ostream& out, const ConvexHull& convexHull);
     friend bool operator<(const HullPoint& one, const HullPoint& other);
@@ -120,13 +121,12 @@ int main() {
         points.push_back(point);
     }
     ConvexHull convexHull(points);
-//    std::cout << convexHull << "\n";
     size_t q;
     std::cin >> q;
     for (int i = 0; i < q; ++i) {
         Point point;
         std::cin >> point;
-        std::cout << std::setprecision(5) << convexHull.distanceToInsidePoint(point, points) << "\n";
+        std::cout << std::setprecision(5) << convexHull.distanceToInsidePoint(point) << "\n";
     }
 }
 
@@ -147,17 +147,17 @@ double ConvexHull::time(const HullPoint* a, const HullPoint* b, const HullPoint*
     return -product.getY() / product.getZ();
 }
 
-bool ConvexHull::antiClockwise(const HullPoint* a, const HullPoint* b, const HullPoint* c) {
+bool ConvexHull::isLeftRotation(const HullPoint* a, const HullPoint* b, const HullPoint* c) {
     if (a == nullptr || b == nullptr || c == nullptr)
         return true;
     return (Vector(*a, *b) * Vector(*b, *c)).getZ() > 0;
 }
 
-void ConvexHull::supportingRib(HullPoint*& u, HullPoint*& v) {
+void ConvexHull::findSupportingRib(HullPoint*& u, HullPoint*& v) {
     while (true) {
-        if (!antiClockwise(u->prev, u, v))
+        if (!isLeftRotation(u->prev, u, v))
             u = u->prev;
-        else if (!antiClockwise(u, v, v->next))
+        else if (!isLeftRotation(u, v, v->next))
             v = v->next;
         else
             break;
@@ -173,7 +173,7 @@ std::vector<ConvexHull::HullPoint*> ConvexHull::merge(size_t leftBorder, size_t 
     std::vector<HullPoint*> movies;
     auto u = &points[middle - 1];
     auto v = &points[middle];
-    supportingRib(u, v);
+    findSupportingRib(u, v);
     size_t currentLeft = 0;
     size_t currentRight = 0;
     for (auto currentTime = -INF; true;) {
@@ -373,16 +373,18 @@ ConvexHull::ConvexHull(const std::vector<Point>& points) {
         this->points.push_back(point);
         this->points.back().rotate(ANGLE);
     }
+    for (auto point: points)
+        originalPoints.push_back(point);
     buildConvexHull();
     this->points.back().resetTotalNumber();
 }
 
-double ConvexHull::distanceToInsidePoint(const Point &point, const std::vector<Point>& points) const {
+double ConvexHull::distanceToInsidePoint(const Point &point) const {
     double minDistance = INF;
     for (Face face : hull) {
-        double x1 = points[face.getFirst()].x, y1 = points[face.getFirst()].y, z1 = points[face.getFirst()].z;
-        double x2 = points[face.getSecond()].x, y2 = points[face.getSecond()].y, z2 = points[face.getSecond()].z;
-        double x3 = points[face.getThird()].x, y3 = points[face.getThird()].y, z3 = points[face.getThird()].z;
+        double x1 = originalPoints[face.getFirst()].x, y1 = originalPoints[face.getFirst()].y, z1 = originalPoints[face.getFirst()].z;
+        double x2 = originalPoints[face.getSecond()].x, y2 = originalPoints[face.getSecond()].y, z2 = originalPoints[face.getSecond()].z;
+        double x3 = originalPoints[face.getThird()].x, y3 = originalPoints[face.getThird()].y, z3 = originalPoints[face.getThird()].z;
         double A = y1 * z2 - y1 * z3 - y2 * z1 + y2 * z3 + y3 * z1 - y3 * z2;
         double B = -x1 * z2 + x1 * z3 + x2 * z1 - x2 * z3 - x3 * z1 + x3 * z2;
         double C = x1 * y2 - x1 * y3 - x2 * y1 + x2 * y3 + x3 * y1 - x3 * y2;
