@@ -3,6 +3,7 @@
 #include <vector>
 #include <tuple>
 #include <cmath>
+#include <iomanip>
 
 struct Point {
     double x, y, z;
@@ -15,7 +16,7 @@ struct Point {
     
     Point& operator-=(const Point& other);
     friend Point operator-(const Point& one, const Point& other);
-    
+    friend std::istream& operator>>(std::istream& input, Point& point);
 };
 
 class Vector {
@@ -100,7 +101,8 @@ public:
 
     std::vector<Face> getHull() const { return hull; }
     size_t getHullSize() const { return hull.size(); }
-
+    double distanceToInsidePoint(const Point& point, const std::vector<Point>& points) const;
+    
     friend std::ostream& operator<<(std::ostream& out, const ConvexHull& convexHull);
     friend bool operator<(const HullPoint& one, const HullPoint& other);
 
@@ -109,19 +111,22 @@ public:
 size_t ConvexHull::HullPoint::totalNumber = 0;
 
 int main() {
-    size_t testsNumber;
-    std::cin >> testsNumber;
-    for (int k = 0; k < testsNumber; ++k) {
-        size_t n;
-        std::cin >> n;
-        std::vector<Point> points;
-        for (size_t i = 0; i < n; ++i) {
-            Point p;
-            std::cin >> p.x >> p.y >> p.z;
-            points.push_back(p);
-        }
-        ConvexHull convex_hull(points);
-        std::cout << convex_hull << "\n";
+    size_t n;
+    std::cin >> n;
+    std::vector<Point> points;
+    for (size_t i = 0; i < n; ++i) {
+        Point point;
+        std::cin >> point;
+        points.push_back(point);
+    }
+    ConvexHull convexHull(points);
+//    std::cout << convexHull << "\n";
+    size_t q;
+    std::cin >> q;
+    for (int i = 0; i < q; ++i) {
+        Point point;
+        std::cin >> point;
+        std::cout << std::setprecision(5) << convexHull.distanceToInsidePoint(point, points) << "\n";
     }
 }
 
@@ -372,6 +377,29 @@ ConvexHull::ConvexHull(const std::vector<Point>& points) {
     this->points.back().resetTotalNumber();
 }
 
+double ConvexHull::distanceToInsidePoint(const Point &point, const std::vector<Point>& points) const {
+    double minDistance = INF;
+    for (Face face : hull) {
+        double x1 = points[face.getFirst()].x, y1 = points[face.getFirst()].y, z1 = points[face.getFirst()].z;
+        double x2 = points[face.getSecond()].x, y2 = points[face.getSecond()].y, z2 = points[face.getSecond()].z;
+        double x3 = points[face.getThird()].x, y3 = points[face.getThird()].y, z3 = points[face.getThird()].z;
+        double A = y1 * z2 - y1 * z3 - y2 * z1 + y2 * z3 + y3 * z1 - y3 * z2;
+        double B = -x1 * z2 + x1 * z3 + x2 * z1 - x2 * z3 - x3 * z1 + x3 * z2;
+        double C = x1 * y2 - x1 * y3 - x2 * y1 + x2 * y3 + x3 * y1 - x3 * y2;
+        double D = -x1 * y2 * z3 + x1 * y3 * z2 + x2 * y1 * z3 - x2 * y3 * z1 - x3 * y1 * z2 + x3 * y2 * z1;
+        double denominator = std::sqrt(A * A + B * B + C * C);
+        double currentDistance = std::abs(A * point.x + B * point.y + C * point.z + D) / denominator;
+        if (currentDistance < minDistance)
+            minDistance = currentDistance;
+    }
+    return minDistance;
+}
+
 bool operator<(const ConvexHull::HullPoint& one, const ConvexHull::HullPoint& other) {
     return one.x < other.x;
+}
+
+std::istream& operator>>(std::istream& input, Point& point) {
+    input >> point.x >> point.y >> point.z;
+    return input;
 }
