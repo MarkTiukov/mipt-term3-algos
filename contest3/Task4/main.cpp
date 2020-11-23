@@ -43,7 +43,7 @@ public:
     
     static long long crossProduct(const Vector& v1, const Vector& v2);
     static bool areCollinear(const Vector& v1, const Vector& v2);
-
+    
 };
 
 class Polygon {
@@ -53,7 +53,7 @@ private:
     static bool isLowerAndToTheLeft(const Point& p1, const Point& p2);
     static bool compareByAngle(const Point& p1, const Point& p2, const Point& begin);
     static bool compareByAngle(const Vector& v1, const Vector& v2);
-
+    
     
     struct LowerAndToTheLeftComparator : std::binary_function<Point, Point, bool> {
         Polygon *polygon;
