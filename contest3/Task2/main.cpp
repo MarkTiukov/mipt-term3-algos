@@ -1,56 +1,10 @@
 #include <iostream>
-#include <vector>
-#include <cmath>
-#include <algorithm>
-#include <deque>
 #include <iomanip>
+#include "geometry.h"
 
 const size_t fOUTPUT_PRECISION = 10;
 
-struct Point {
-    long long x, y;
-    
-    Point() = default;
-    Point(long long x, long long y) : x(x), y(y) {}
-    
-    Point& operator-=(const Point& another);
-};
-
-class Vector {
-private:
-    Point begin;
-    Point end;
-    long long x, y;
-public:
-    
-    Vector() = default;
-    Vector(const Point& begin, const Point& end) : begin(begin), end(end),
-                                                   x(end.x - begin.x),
-                                                   y(end.y - begin.y) {}
-    Vector(const Point& radiusVector) : end(radiusVector),
-                                        x(radiusVector.x),
-                                        y(radiusVector.y) {}
-    Vector(long long x, long long y) : x(x), y(y), end(Point(x, y)) {}
-    
-    long long getX() const { return x; }
-    long long getY() const { return y; }
-    Point getBegin() const { return begin; }
-    Point getEnd() const { return end; }
-    
-    bool operator==(const Vector& another) const;
-    bool operator!=(const Vector& another) const;
-    
-    static long long zCoordinateOfCrossProduct(const Vector& v1, const Vector& v2);
-    
-};
-
 extern std::ostream& operator<<(std::ostream& outputStream, const Point& point);
-
-bool operator<(const Point& one, const Point& another);
-bool operator>(const Point& one, const Point& another);
-bool operator==(const Point& one, const Point& another);
-bool operator!=(const Point& one, const Point& another);
-Point operator-(const Point& one, const Point& another);
 
 Point begin;
 
@@ -87,27 +41,6 @@ void readAndProcessData(std::vector<Point> &points) {
     std::sort(++points.begin(), points.end(), cmp);
 }
 
-bool operator==(const Point& one, const Point &other) {
-    return one.x == other.x && one.y == other.y;
-}
-
-bool operator>(const Point& one, const Point &other) {
-    return !(one < other || one == other);
-}
-
-bool operator!=(const Point& one, const Point &other) {
-    return !(one == other);
-}
-
-bool operator<(const Point& one, const Point& another) {
-    bool result = one.y < another.y;
-    if (one.y == another.y)
-        result = one.x < another.x;
-    return result;
-}
-
-
-
 void printMinFence(const std::vector<Point> &points) {
     std::deque<Point> fence = std::deque<Point>({points[0]});
     size_t secondElementPosition = 1;
@@ -133,10 +66,6 @@ void printMinFence(const std::vector<Point> &points) {
     
 }
 
-extern std::ostream& operator<<(std::ostream& outputStream, const Point& point) {
-    outputStream << point.x << " " << point.y;
-    return outputStream;
-}
 
 bool checkLeftRotation(const Point& a, const Point& b,const Point& c) {
     auto product = Vector::zCoordinateOfCrossProduct(Vector(b - a), Vector(c - a));
@@ -159,29 +88,4 @@ bool cmp(const Point &a, const Point &b) {
         return v1.getX() * v1.getX() + v1.getY() * v1.getY() > v2.getX() * v2.getX() + v2.getY() * v2.getY() ;
     }
     return product > 0;
-}
-
-long long Vector::zCoordinateOfCrossProduct(const Vector& v1, const Vector& v2) {
-    return v1.x * v2.y - v1.y * v2.x;
-}
-
-
-Point& Point::operator-=(const Point& another) {
-    this->x -= another.x;
-    this->y -= another.y;
-    return *this;
-}
-
-Point operator-(const Point& one, const Point& another) {
-    Point result = one;
-    result -= another;
-    return result;
-}
-
-bool Vector::operator==(const Vector& another) const {
-    return this->x == another.x && this->y == another.y;
-}
-
-bool Vector::operator!=(const Vector& another) const {
-    return !(*this == another);
 }
