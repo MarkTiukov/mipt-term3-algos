@@ -8,8 +8,17 @@
 #include "Vector.hpp"
 #include "Face.hpp"
 
+
+/// Creates a convex hull in space using Chan algorithm
+/// https://drive.google.com/file/d/0B6oYnrxwl0UcTV9GamFfOHBHeXM/view?usp=sharing
 class ConvexHull {
 public:
+    // It's better to use raw pointers beacuse of need to
+    // store a vector of points allocated automatically,
+    // bidirectional structure of HullPoint
+    // and need to create temporary instances.
+    // Similar situation:
+    // https://stackoverflow.com/questions/24049155/set-shared-ptr-to-point-existing-object
     struct HullPoint: Point {
     private:
         static size_t totalNumber;
