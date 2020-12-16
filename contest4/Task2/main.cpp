@@ -21,11 +21,9 @@ int main() {
     CruelGameSolver solver;
     auto result = solver.solve(n);
     std::cout << (result.first == 0 ? "Mueller" : "Schtirlitz") << std::endl;
-    if (result.first != 0) {
-        for (auto possibleFirstMove : result.second) {
+    if (result.first != 0)
+        for (auto possibleFirstMove : result.second)
             std::cout << possibleFirstMove << std::endl;
-        }
-    }
 }
 
 std::pair<int, std::vector<int>> CruelGameSolver::solve(int n) {
@@ -35,9 +33,8 @@ std::pair<int, std::vector<int>> CruelGameSolver::solve(int n) {
         std::unordered_set<int> resultsForConnectedGames;
         resultsForConnectedGames.emplace(answers[i - 1]);
         resultsForConnectedGames.emplace(answers[i - 2]);
-        for (int j = 2; j < i - 2; ++j) {
+        for (int j = 2; j < i - 2; ++j)
             resultsForConnectedGames.emplace(answers[j] ^ answers[i - j - 1]);
-        }
         answers[i] = mex(resultsForConnectedGames);
     }
     return std::make_pair(answers[n], findFirstPossibleMoves(answers));
@@ -79,10 +76,9 @@ std::vector<int> CruelGameSolver::findFirstPossibleMoves(const std::vector<int> 
                 firstPossibleMoves.push_back(1);
             if (answers[n - 2] == 0)
                 firstPossibleMoves.push_back(2);
-            for (int i = 2; i < n - 2; ++i) {
+            for (int i = 2; i < n - 2; ++i) 
                 if ((answers[i] ^  answers[n - i - 1]) == 0)
                     firstPossibleMoves.push_back(i + 1);
-            }
             if (answers[n - 2] == 0)
                 firstPossibleMoves.push_back(n - 1);
             if (answers[n - 1] == 0)
