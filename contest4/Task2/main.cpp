@@ -7,7 +7,7 @@ private:
     
     void initializeNumbers(std::vector<int> &answers) const;
     int mex(const std::unordered_set<int> &set) const;
-    std::vector<int> findFirstMoves(const std::vector<int> &answers) const;
+    std::vector<int> findFirstPossibleMoves(const std::vector<int> &answers) const;
     
 public:
     CruelGameSolver() = default;
@@ -40,7 +40,7 @@ std::pair<int, std::vector<int>> CruelGameSolver::solve(int n) {
         }
         answers[i] = mex(resultsForConnectedGames);
     }
-    return std::make_pair(answers[n], findFirstMoves(answers));
+    return std::make_pair(answers[n], findFirstPossibleMoves(answers));
 }
 
 void CruelGameSolver::initializeNumbers(std::vector<int> &answers) const {
@@ -61,35 +61,35 @@ int CruelGameSolver::mex(const std::unordered_set<int> &set) const {
     return mex;
 }
 
-std::vector<int> CruelGameSolver::findFirstMoves(const std::vector<int> &answers) const {
+std::vector<int> CruelGameSolver::findFirstPossibleMoves(const std::vector<int> &answers) const {
     size_t n = answers.size() - 1;
-    std::vector<int> firstMoves;
+    std::vector<int> firstPossibleMoves;
     switch (n) {
         case 1:
-            firstMoves = {1};
+            firstPossibleMoves = {1};
             break;
         case 2:
-            firstMoves = {1, 2};
+            firstPossibleMoves = {1, 2};
             break;
         case 3:
-            firstMoves = {2};
+            firstPossibleMoves = {2};
             break;
         default:
             if (answers[n - 1] == 0)
-                firstMoves.push_back(1);
+                firstPossibleMoves.push_back(1);
             if (answers[n - 2] == 0)
-                firstMoves.push_back(2);
+                firstPossibleMoves.push_back(2);
             for (int i = 2; i < n - 2; ++i) {
                 if ((answers[i] ^  answers[n - i - 1]) == 0)
-                    firstMoves.push_back(i + 1);
+                    firstPossibleMoves.push_back(i + 1);
             }
             if (answers[n - 2] == 0)
-                firstMoves.push_back(n - 1);
+                firstPossibleMoves.push_back(n - 1);
             if (answers[n - 1] == 0)
-                firstMoves.push_back(n);
+                firstPossibleMoves.push_back(n);
             break;
     }
-    return firstMoves;
+    return firstPossibleMoves;
 }
 
 
