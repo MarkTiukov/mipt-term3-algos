@@ -7,7 +7,7 @@ private:
     
     void initializeNumbers(std::vector<int> &answers) const;
     int mex(const std::unordered_set<int> &set) const;
-
+    std::vector<int> findFirstMoves(const std::vector<int> &answers) const;
     
 public:
     CruelGameSolver() = default;
@@ -40,6 +40,29 @@ std::pair<int, std::vector<int>> CruelGameSolver::solve(int n) {
         }
         answers[i] = mex(resultsForConnectedGames);
     }
+    return std::make_pair(answers[n], findFirstMoves(answers));
+}
+
+void CruelGameSolver::initializeNumbers(std::vector<int> &answers) const {
+    answers[0] = 0;
+    if (answers.size() > 1)
+        answers[1] = 1;
+    if (answers.size() > 2)
+        answers[2] = 1;
+    if (answers.size() > 3)
+        answers[3] = 2;
+    
+}
+
+int CruelGameSolver::mex(const std::unordered_set<int> &set) const {
+    int mex = 0;
+    while (set.find(mex) != set.end())
+        ++mex;
+    return mex;
+}
+
+std::vector<int> CruelGameSolver::findFirstMoves(const std::vector<int> &answers) const {
+    size_t n = answers.size() - 1;
     std::vector<int> firstMoves;
     switch (n) {
         case 1:
@@ -66,25 +89,8 @@ std::pair<int, std::vector<int>> CruelGameSolver::solve(int n) {
                 firstMoves.push_back(n);
             break;
     }
-    return std::make_pair(answers[n], firstMoves);
+    return firstMoves;
 }
 
-void CruelGameSolver::initializeNumbers(std::vector<int> &answers) const {
-    answers[0] = 0;
-    if (answers.size() > 1)
-        answers[1] = 1;
-    if (answers.size() > 2)
-        answers[2] = 1;
-    if (answers.size() > 3)
-        answers[3] = 2;
-    
-}
-
-int CruelGameSolver::mex(const std::unordered_set<int> &set) const {
-    int mex = 0;
-    while (set.find(mex) != set.end())
-        ++mex;
-    return mex;
-}
 
 
